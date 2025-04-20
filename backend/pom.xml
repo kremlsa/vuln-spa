@@ -10,6 +10,9 @@
     </parent>
     <groupId>ssdlc.online</groupId>
     <artifactId>backend</artifactId>
+    <properties>
+        <skip.frontend>false</skip.frontend>
+    </properties>
 
     <dependencies>
         <!-- web -->
@@ -55,6 +58,7 @@
 
                 <configuration>
                     <workingDirectory>../frontend</workingDirectory>
+                    <skip>${skip.frontend}</skip>
                 </configuration>
 
                 <executions>
@@ -113,6 +117,7 @@
                             <goal>copy-resources</goal>
                         </goals>
                         <configuration>
+                            <skip>${skip.frontend}</skip>
                             <outputDirectory>${project.build.outputDirectory}/static</outputDirectory>
                             <resources>
                                 <resource>
@@ -131,6 +136,7 @@
                             <goal>copy-resources</goal>
                         </goals>
                         <configuration>
+                            <skip>${skip.frontend}</skip>
                             <overwrite>true</overwrite> <!-- перезаписывать старые файлы -->
                             <outputDirectory>${basedir}/src/main/resources/static</outputDirectory>
                             <resources>
@@ -148,5 +154,14 @@
 
         </plugins>
     </build>
+
+    <profiles>
+        <profile>
+            <id>no-frontend</id>
+            <properties>
+                <skip.frontend>true</skip.frontend>
+            </properties>
+        </profile>
+    </profiles>
 
 </project>

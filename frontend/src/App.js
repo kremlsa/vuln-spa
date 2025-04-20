@@ -1,4 +1,8 @@
 import React, { useState, useEffect } from 'react';
+import Header from './components/Header';
+import Footer from './components/Footer';
+import LoginForm from './components/LoginForm';
+import NotesSection from './components/NotesSection';
 import './App.css'; // <-- Подключаем наш CSS
 
 function App() {
@@ -138,78 +142,27 @@ function App() {
 
     return (
     <div className="app">
-    {/* Header */}
-    <header className="header">
-    <div className="logo-container">
-    <img src="/logo.png" alt="Logo" className="logo" />
-    <h1 className="site-name">Сервис Заметок</h1>
-    </div>
-
-    {authenticated && (
-    <div className="user-info">
-    <div>Пользователь: <b>{userInfo.username}</b></div>
-    <div>Роли: <b>{userInfo.roles.join(', ')}</b></div>
-    <button onClick={handleLogout} className="logout-button">Выйти</button>
-    </div>
+    <Header authenticated={authenticated} userInfo={userInfo} handleLogout={handleLogout} />
+    <main className="main">
+    {!authenticated ? (
+    <LoginForm
+    username={username}
+    setUsername={setUsername}
+    password={password}
+    setPassword={setPassword}
+    handleLogin={handleLogin}
+    />
+    ) : (
+    <NotesSection
+    notes={notes}
+    newNote={newNote}
+    setNewNote={setNewNote}
+    handleCreateNote={handleCreateNote}
+    handleDeleteNote={handleDeleteNote}
+    />
     )}
-</header>
-
-{/* Main */}
-<main className="main">
-{!authenticated ? (
-<form onSubmit={handleLogin} className="form-card">
-<h2>Вход</h2>
-<input
-type="text"
-placeholder="Имя пользователя"
-value={username}
-onChange={(e) => setUsername(e.target.value)}
-autoComplete="username"
-className="input"
-/>
-<input
-type="password"
-placeholder="Пароль"
-value={password}
-onChange={(e) => setPassword(e.target.value)}
-autoComplete="current-password"
-className="input"
-/>
-<button type="submit" className="button">Войти</button>
-</form>
-) : (
-<div className="notes-section">
-<form onSubmit={handleCreateNote} className="note-form">
-<h2>Создать новую заметку</h2>
-<div className="note-form-input">
-<input
-type="text"
-placeholder="Введите текст заметки"
-value={newNote}
-onChange={(e) => setNewNote(e.target.value)}
-className="input"
-/>
-<button type="submit" className="button">Создать</button>
-</div>
-</form>
-
-<h2>Список заметок</h2>
-<ul className="note-list">
-{notes.map((note) => (
-<li key={note.id} className="note-item">
-<div dangerouslySetInnerHTML={{ __html: note.content }} />
-<button onClick={() => handleDeleteNote(note.id)} className="delete-button">Удалить</button>
-</li>
-))}
-</ul>
-</div>
-)}
 </main>
-
-{/* Footer */}
-<footer className="footer">
-Текущая дата: {currentDate}
-</footer>
+<Footer currentDate={currentDate} />
 </div>
 );
 }
