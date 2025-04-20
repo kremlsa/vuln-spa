@@ -117,7 +117,6 @@
                             <goal>copy-resources</goal>
                         </goals>
                         <configuration>
-                            <skip>${skip.frontend}</skip>
                             <outputDirectory>${project.build.outputDirectory}/static</outputDirectory>
                             <resources>
                                 <resource>
@@ -136,7 +135,6 @@
                             <goal>copy-resources</goal>
                         </goals>
                         <configuration>
-                            <skip>${skip.frontend}</skip>
                             <overwrite>true</overwrite> <!-- перезаписывать старые файлы -->
                             <outputDirectory>${basedir}/src/main/resources/static</outputDirectory>
                             <resources>
