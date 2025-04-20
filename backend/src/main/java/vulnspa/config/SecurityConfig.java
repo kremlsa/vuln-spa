@@ -23,7 +23,7 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .authorizeHttpRequests(authz -> authz
-                        .requestMatchers("/", "/index.html", "/static/**", "/favicon.ico").permitAll()
+                        .requestMatchers("/", "/index.html", "/static/**", "/favicon.ico", "/logo.png").permitAll()
                         .requestMatchers("/h2-console/**").permitAll()
                         .requestMatchers("/login").permitAll() // не забудь разрешить доступ к /login
                         .requestMatchers(HttpMethod.GET, "/api/notes/**").permitAll()

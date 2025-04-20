@@ -1,0 +1,127 @@
+/* Общие стили */
+.app {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Header */
+.header {
+    background-color: #2d3748;
+    color: white;
+    padding: 10px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logo-container {
+    display: flex;
+    align-items: center;
+}
+
+.logo {
+    height: auto;
+    width: 120px;
+    margin-right: 10px;
+    background-color: #dddddd; /* Красный фон например */
+    padding: 8px;
+    border-radius: 8px; /* Скруглим края красиво */
+}
+
+.site-name {
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.user-info {
+    text-align: right;
+}
+
+.logout-button {
+    margin-top: 5px;
+    padding: 5px 10px;
+    background-color: #e53e3e;
+    border: none;
+    border-radius: 4px;
+    color: white;
+    cursor: pointer;
+}
+
+.logout-button:hover {
+    background-color: #c53030;
+}
+
+/* Main */
+.main {
+    flex: 1;
+    padding: 20px;
+    background-color: #f7fafc;
+}
+
+.form-card, .note-form {
+    background: white;
+    padding: 20px;
+    margin-bottom: 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+.input {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #cbd5e0;
+    border-radius: 4px;
+}
+
+.button {
+    background-color: #4299e1;
+    border: none;
+    padding: 10px 15px;
+    color: white;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.button:hover {
+    background-color: #3182ce;
+}
+
+.note-list {
+    list-style: none;
+    padding: 0;
+}
+
+.note-item {
+    background: white;
+    padding: 15px;
+    margin-bottom: 10px;
+    border-radius: 6px;
+    box-shadow: 0 0 5px rgba(0,0,0,0.1);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.delete-button {
+    background-color: #e53e3e;
+    border: none;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.delete-button:hover {
+    background-color: #c53030;
+}
+
+/* Footer */
+.footer {
+    background-color: #2d3748;
+    color: white;
+    text-align: center;
+    padding: 10px 20px;
+}
