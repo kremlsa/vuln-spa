@@ -10,6 +10,7 @@ function NotesPage({ userInfo }) {
     const [newNote, setNewNote] = useState('');
     const navigate = useNavigate();
 
+
     const fetchNotes = async () => {
         try {
             const response = await fetch('/api/notes', { credentials: 'include' });
@@ -77,16 +78,26 @@ function NotesPage({ userInfo }) {
         }
     };
 
+    // Проверка прав
+    const canCreate = userInfo.roles.includes('ROLE_USER') || userInfo.roles.includes('ROLE_ADMIN');
+    const canDelete = userInfo.roles.includes('ROLE_ADMIN');
+
     return (
-        <div>
+        <div className="app">
             <Header userInfo={userInfo} onLogout={handleLogout} />
-            <main style={{ padding: '20px' }}>
-                <NoteForm newNote={newNote} setNewNote={setNewNote} onCreate={handleCreateNote} />
-                <NoteList notes={notes} onDelete={handleDeleteNote} />
+            <main className="main">
+                {/* Показываем форму создания только если есть право */}
+                {canCreate && (
+                    <NoteForm newNote={newNote} setNewNote={setNewNote} onCreate={handleCreateNote} />
+                )}
+
+                {/* Передаём флаг canDelete в NoteList */}
+                <NoteList notes={notes} onDelete={canDelete ? handleDeleteNote : null} />
             </main>
             <Footer />
         </div>
     );
 }
+
 
 export default NotesPage;

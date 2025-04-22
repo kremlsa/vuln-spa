@@ -6,7 +6,11 @@ function NoteList({ notes, onDelete }) {
             {notes.map((note) => (
                 <li key={note.id} className="note-list">
                     <div dangerouslySetInnerHTML={{ __html: note.content }} />
-                    <button onClick={() => onDelete(note.id)} className="delete-button">Удалить</button>
+                    {onDelete && (
+                        <button onClick={() => onDelete(note.id)} className="delete-button">
+                            Удалить
+                        </button>
+                    )}
                 </li>
             ))}
         </ul>
@@ -14,3 +18,4 @@ function NoteList({ notes, onDelete }) {
 }
 
 export default NoteList;
+
