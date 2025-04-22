@@ -7,6 +7,7 @@ import './App.css';
 function App() {
     const [authenticated, setAuthenticated] = useState(false);
     const [userInfo, setUserInfo] = useState({ username: '', roles: [] });
+    const [loadingAuth, setLoadingAuth] = useState(true); // ← добавляем флаг загрузки
 
     const checkAuth = async () => {
         try {
@@ -21,12 +22,18 @@ function App() {
         } catch (error) {
             console.error('Ошибка авторизации:', error);
             setAuthenticated(false);
+        } finally {
+            setLoadingAuth(false); // ← в любом случае, заканчиваем загрузку
         }
     };
 
     useEffect(() => {
         checkAuth();
     }, []);
+
+    if (loadingAuth) {
+        return <div className="loading">Загрузка...</div>; // ← пока грузится авторизация
+    }
 
     return (
         <Router>
