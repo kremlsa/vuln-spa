@@ -30,7 +30,7 @@ def ask_chatgpt(diff_text):
         {"role": "user", "content": f"Вот diff кода:\n{diff_text}"}
     ]
     response = client.chat.completions.create(
-        model="gpt-4",
+        model="gpt-4-turbo",
         messages=messages
     )
     return response.choices[0].message.content
