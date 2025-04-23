@@ -1,3 +1,6 @@
+stages:
+  - test
+
 ai_review:
   stage: test
   image: python:3.10
