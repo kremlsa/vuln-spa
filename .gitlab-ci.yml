@@ -1,0 +1,11 @@
+ai_review:
+  stage: test
+  image: python:3.10
+  only:
+    - merge_requests
+  script:
+    - pip install requests openai
+    - python3 ai_review_bot.py
+  variables:
+    GITLAB_TOKEN: $GITLAB_TOKEN
+    OPENAI_API_KEY: $OPENAI_API_KEY
