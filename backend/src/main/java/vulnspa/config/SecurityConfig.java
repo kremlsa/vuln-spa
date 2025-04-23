@@ -7,6 +7,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
@@ -23,11 +24,14 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .authorizeHttpRequests(authz -> authz
-                        .requestMatchers("/", "/index.html", "/static/**", "/favicon.ico", "/logo.png").permitAll()
+                        .requestMatchers("/", "/index.html", "/static/**", "/favicon.ico", "/logo.png", "/notes").permitAll()
                         .requestMatchers("/h2-console/**").permitAll()
                         .requestMatchers("/login").permitAll() // не забудь разрешить доступ к /login
                         .requestMatchers(HttpMethod.GET, "/api/notes/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/notes/**").hasRole("USER")
+                        .requestMatchers(HttpMethod.DELETE, "/api/notes/**").hasRole("ADMIN")
                         .requestMatchers("/api/**").authenticated()
+
                 )
                 .formLogin()
                 .and()
@@ -36,6 +40,9 @@ public class SecurityConfig {
                         .logoutSuccessHandler((request, response, authentication) -> {
                             response.setStatus(HttpServletResponse.SC_OK); // <-- после выхода вернём 200 OK
                         })
+                )
+                .sessionManagement(session -> session
+                        .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
                 )
                 .csrf().disable()
                 .exceptionHandling()
