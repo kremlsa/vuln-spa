@@ -15,6 +15,11 @@ CREATE TABLE IF NOT EXISTS AUTHORITIES (
 -- Индекс на таблицу ролей
 CREATE UNIQUE INDEX IF NOT EXISTS ix_auth_username ON AUTHORITIES (username, authority);
 
--- Вставка тестового пользователя admin/admin с ролью ROLE_ADMIN
-INSERT INTO USERS (username, password, enabled) VALUES ('admin', '{noop}admin', true);
-INSERT INTO AUTHORITIES (username, authority) VALUES ('admin', 'ROLE_ADMIN');
+-- Для пользователя admin
+INSERT INTO users (username, password, enabled) VALUES ('admin', '{noop}admin', true);
+INSERT INTO authorities (username, authority) VALUES ('admin', 'ROLE_ADMIN');
+
+-- Для пользователя user
+INSERT INTO users (username, password, enabled) VALUES ('user', '{noop}user', true);
+INSERT INTO authorities (username, authority) VALUES ('user', 'ROLE_USER');
+
