@@ -151,3 +151,11 @@ header {
     padding: 10px 20px;
 }
 
+.error-banner {
+    background-color: #e53e3e;
+    color: white;
+    padding: 10px;
+    border-radius: 4px;
+    margin-bottom: 15px;
+    font-weight: bold;
+}
