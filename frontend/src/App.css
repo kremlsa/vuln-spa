@@ -1,4 +1,11 @@
 /* Общие стили */
+body {
+    margin: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f7fafc;
+    color: #2d3748;
+}
+
 .app {
     display: flex;
     flex-direction: column;
@@ -7,14 +14,18 @@
 }
 
 /* Header */
-.header {
+header {
     background-color: #2d3748;
     color: white;
     padding: 10px 20px;
     display: flex;
     justify-content: space-between;
     align-items: center;
+}
 
+.header-left {
+    display: flex;
+    align-items: center;
 }
 
 .logo-container {
@@ -36,8 +47,13 @@
     font-weight: bold;
 }
 
+
+
+/* Информация о пользователе */
 .user-info {
+    color: white;
     text-align: right;
+    font-weight: bold;
 }
 
 .logout-button {
@@ -50,17 +66,21 @@
     cursor: pointer;
 }
 
+
+
 .logout-button:hover {
     background-color: #c53030;
 }
 
-/* Main */
+/* Main контент */
 .main {
     flex: 1;
     padding: 20px;
     background-color: #f7fafc;
 }
 
+
+/* Формы входа и создания заметок */
 .form-card, .note-form {
     background: white;
     padding: 20px;
@@ -70,7 +90,7 @@
 }
 
 .input {
-    width: 100%;
+    width: 80%;
     padding: 10px;
     margin-bottom: 15px;
     border: 1px solid #cbd5e0;
@@ -84,15 +104,18 @@
     color: white;
     border-radius: 4px;
     cursor: pointer;
+    font-size: 14px;
 }
 
 .button:hover {
     background-color: #3182ce;
 }
 
+/* Список заметок */
 .note-list {
     list-style: none;
     padding: 0;
+    margin-top: 20px;
 }
 
 .note-item {
@@ -119,6 +142,7 @@
     background-color: #c53030;
 }
 
+
 /* Footer */
 .footer {
     background-color: #2d3748;
@@ -126,3 +150,4 @@
     text-align: center;
     padding: 10px 20px;
 }
+
