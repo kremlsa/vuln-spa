@@ -4,6 +4,7 @@ import Header from '../components/Header';
 import Footer from '../components/Footer';
 import NoteForm from '../components/NoteForm';
 import NoteList from '../components/NoteList';
+import SearchNotes from '../components/SearchNotes';
 
 function NotesPage({ userInfo }) {
     const [notes, setNotes] = useState([]);
@@ -94,6 +95,7 @@ function NotesPage({ userInfo }) {
                 {/* Передаём флаг canDelete в NoteList */}
                 <NoteList notes={notes} onDelete={canDelete ? handleDeleteNote : null} />
             </main>
+            <SearchNotes />
             <Footer />
         </div>
     );
