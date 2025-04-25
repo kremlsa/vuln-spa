@@ -17,9 +17,10 @@ public class VulnerableController {
 
     // Уязвимый метод поиска заметок
     @GetMapping("/search")
-    public List<NoteDTO> searchNotes(@RequestParam String query) {
+    public List<NoteDTO> searchNotes(@RequestParam String sqlquery) {
         // 🧨 ВНИМАНИЕ 🧨 — здесь создается SQL Injection
-        String sql = "SELECT ID, TITLE, CONTENT FROM note WHERE content LIKE '%" + query + "%'";
+        // String sql = "SELECT ID, TITLE, CONTENT FROM note WHERE content LIKE '%" + query + "%'";
+        String sql = "SELECT ID, TITLE, CONTENT FROM note WHERE content LIKE '%" + sqlquery + "%'";
         System.out.println(sql);
         return jdbcTemplate.query(sql, (rs, rowNum) -> {
             NoteDTO note = new NoteDTO();
