@@ -5,23 +5,20 @@ import Footer from '../components/Footer';
 import NoteForm from '../components/NoteForm';
 import NoteList from '../components/NoteList';
 import SearchNotes from '../components/SearchNotes';
+import { fetchWithErrorHandling } from '../utils/fetchWithErrorHandling';
 
 function NotesPage({ userInfo }) {
     const [notes, setNotes] = useState([]);
     const [newNote, setNewNote] = useState('');
+    const [error, setError] = useState(null);
     const navigate = useNavigate();
 
+    const canCreate = userInfo.roles.includes('ROLE_USER') || userInfo.roles.includes('ROLE_ADMIN');
+    const canDelete = userInfo.roles.includes('ROLE_ADMIN');
 
     const fetchNotes = async () => {
-        try {
-            const response = await fetch('/api/notes', { credentials: 'include' });
-            if (response.ok) {
-                const data = await response.json();
-                setNotes(data);
-            }
-        } catch (error) {
-            console.error('Ошибка загрузки заметок:', error);
-        }
+        const data = await fetchWithErrorHandling('/api/notes', {}, setError);
+        if (data) setNotes(data);
     };
 
     useEffect(() => {
@@ -31,75 +28,56 @@ function NotesPage({ userInfo }) {
     const handleCreateNote = async (content) => {
         if (!content.trim()) return;
 
-        try {
-            const response = await fetch('/api/notes', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ content }),
-                credentials: 'include'
-            });
+        const response = await fetchWithErrorHandling('/api/notes', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ content }),
+        }, setError);
 
-            if (response.ok) {
-                fetchNotes();
-            }
-        } catch (error) {
-            console.error('Ошибка при создании заметки:', error);
+        if (response) {
+            setNewNote('');
+            fetchNotes();
         }
     };
 
     const handleDeleteNote = async (id) => {
         if (!window.confirm('Удалить заметку?')) return;
 
-        try {
-            const response = await fetch(`/api/notes/${id}`, {
-                method: 'DELETE',
-                credentials: 'include'
-            });
+        const result = await fetchWithErrorHandling(`/api/notes/${id}`, {
+            method: 'DELETE',
+        }, setError);
 
-            if (response.ok) {
-                fetchNotes();
-            }
-        } catch (error) {
-            console.error('Ошибка при удалении заметки:', error);
+        if (result !== null) {
+            fetchNotes();
         }
     };
 
     const handleLogout = async () => {
-        try {
-            const response = await fetch('/logout', {
-                method: 'POST',
-                credentials: 'include'
-            });
+        const result = await fetchWithErrorHandling('/logout', {
+            method: 'POST',
+        }, setError);
 
-            if (response.ok) {
-                navigate('/login');
-            }
-        } catch (error) {
-            console.error('Ошибка при выходе:', error);
+        if (result !== null) {
+            navigate('/login');
         }
     };
-
-    // Проверка прав
-    const canCreate = userInfo.roles.includes('ROLE_USER') || userInfo.roles.includes('ROLE_ADMIN');
-    const canDelete = userInfo.roles.includes('ROLE_ADMIN');
 
     return (
         <div className="app">
             <Header userInfo={userInfo} onLogout={handleLogout} />
             <main className="main">
-                {/* Показываем форму создания только если есть право */}
-                {canCreate && (
-                    <NoteForm newNote={newNote} setNewNote={setNewNote} onCreate={handleCreateNote} />
-                )}
+                {error && <div className="error-banner">⚠️ {error}</div>}
 
-                {/* Передаём флаг canDelete в NoteList */}
+                {canCreate &&
+                    <NoteForm newNote={newNote} setNewNote={setNewNote} onCreate={handleCreateNote} />
+                }
+
                 <NoteList notes={notes} onDelete={canDelete ? handleDeleteNote : null} />
+                <SearchNotes />
             </main>
-            <SearchNotes />
             <Footer />
         </div>
     );
 }
-
 
 export default NotesPage;
