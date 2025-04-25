@@ -3,6 +3,7 @@ package vulnspa.security;
 import jakarta.servlet.*;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -10,6 +11,9 @@ import java.util.regex.Pattern;
 
 @Component
 public class WafFilter implements Filter {
+
+    @Value("${waf.enabled:true}")
+    private boolean wafEnabled;
 
     private final Pattern sqlInjectionPattern = Pattern.compile(
             "('|--|;|/\\*|\\*/|\\b(SELECT|UNION|INSERT|UPDATE|DELETE|DROP|OR|AND)\\b)",
@@ -24,6 +28,11 @@ public class WafFilter implements Filter {
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
             throws IOException, ServletException {
+
+        if (!wafEnabled) {
+            chain.doFilter(request, response);
+            return;
+        }
 
         HttpServletRequest httpReq = (HttpServletRequest) request;
         HttpServletResponse httpResp = (HttpServletResponse) response;
