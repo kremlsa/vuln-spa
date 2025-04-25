@@ -1,27 +1,33 @@
 import React, { useState } from 'react';
+import { fetchWithErrorHandling } from '../utils/fetchWithErrorHandling';
 
 function SearchNotes() {
     const [searchQuery, setSearchQuery] = useState('');
     const [results, setResults] = useState([]);
+    const [error, setError] = useState(null);
 
     const handleSearch = async (e) => {
         e.preventDefault();
-        try {
-            const response = await fetch(`/api/search?query=${encodeURIComponent(searchQuery)}`, {
-                credentials: 'include'
-            });
-            if (response.ok) {
-                const data = await response.json();
-                setResults(data);
-            }
-        } catch (error) {
-            console.error('Ошибка поиска:', error);
+        setError(null);
+        setResults([]);
+
+        if (!searchQuery.trim()) {
+            setError("Введите текст для поиска");
+            return;
         }
+
+        const data = await fetchWithErrorHandling(
+            `/api/search?query=${encodeURIComponent(searchQuery)}`,
+            {},
+            setError
+        );
+
+        if (data) setResults(data);
     };
 
- return (
+    return (
         <div className="form-card">
-            <h2>Поиск заметок</h2>
+            <h2>🔍 Поиск заметок</h2>
             <form onSubmit={handleSearch}>
                 <input
                     type="text"
@@ -33,6 +39,8 @@ function SearchNotes() {
                 <button type="submit" className="button">Искать</button>
             </form>
 
+            {error && <div className="error-banner">⚠️ {error}</div>}
+
             {results.length > 0 && (
                 <ul className="note-list">
                     {results.map(note => (
@@ -43,7 +51,9 @@ function SearchNotes() {
                 </ul>
             )}
 
-            {results.length === 0 && <p>Результатов нет.</p>}
+            {results.length === 0 && searchQuery && !error && (
+                <p>Результатов нет.</p>
+            )}
         </div>
     );
 }
