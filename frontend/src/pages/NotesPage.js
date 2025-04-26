@@ -107,12 +107,8 @@ const handleCreateNote = async (noteData) => {
                 {error && <div className="error-banner">⚠️ {error}</div>}
 
                 {canCreate && (
-                    <NoteForm
-                        newNote={newNote}
-                        setNewNote={setNewNote}
-                        onCreate={handleCreateNote}
-                        username={userInfo.username}
-                    />
+                    <NoteForm fetchNotes={fetchNotes} username={userInfo.username} />
+
                 )}
 
                 <NoteList
