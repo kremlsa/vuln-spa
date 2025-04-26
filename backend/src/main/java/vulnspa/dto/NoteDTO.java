@@ -4,6 +4,7 @@ public class NoteDTO {
     private int id;
     private String title;
     private String content;
+    private String author;
 
     public int getId() {
         return id;
@@ -27,5 +28,13 @@ public class NoteDTO {
 
     public void setContent(String content) {
         this.content = content;
+    }
+
+    public String getAuthor() {
+        return author;
+    }
+
+    public void setAuthor(String author) {
+        this.author = author;
     }
 }
