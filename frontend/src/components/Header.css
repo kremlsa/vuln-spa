@@ -1,0 +1,131 @@
+/* src/components/Header.css */
+
+.header {
+  padding: 1rem 2rem;
+  font-family: 'Roboto Mono', monospace;
+  border-bottom: 4px solid;
+  transition: background-color 0.3s, color 0.3s;
+  background-color: #000;
+}
+
+.app.dark .header {
+  background-color: #000;
+  color: #000;
+  border-color: #000;
+}
+
+.app.light .header {
+  background-color: #000;
+  color: #000;
+  border-color: #000;
+}
+
+/* Обертка для содержимого хедера на всю ширину */
+.header-content {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  position: relative; /* Чтобы центрировать заголовок через absolute */
+}
+
+/* Левый блок — логотип */
+.header-left {
+  display: flex;
+  align-items: center;
+}
+
+.logo {
+    height: auto;
+    width: 80px;
+    margin-right: 10px;
+    background-color: #dddddd;
+    padding: 4px;
+    border-radius: 8px; /* Скруглим края красиво */
+}
+
+/* Центральный блок — заголовок сайта */
+.header-center {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.site-title {
+  font-weight: 900;
+  font-size: 1.8rem;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+/* Правый блок — юзер-инфо + выход */
+.header-right {
+  display: flex;
+  align-items: center;
+  margin-left: auto; /* <<< Прижать вправо */
+  gap: 1.5rem;
+}
+
+.user-info-block {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+}
+
+.user-avatar {
+  font-size: 1.5rem;
+  border: 3px solid currentColor;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+}
+
+/* Пульс-анимация для аватарки */
+.pulse {
+  animation: pulseAnimation 1.5s ease-out;
+}
+
+@keyframes pulseAnimation {
+  0% { transform: scale(0.7); opacity: 0; }
+  50% { transform: scale(1.05); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.user-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  text-align: right;
+}
+
+.user-name {
+  font-weight: bold;
+  font-size: 1rem;
+}
+
+.user-role {
+  font-size: 0.9rem;
+  opacity: 0.7;
+}
+
+/* Кнопка выхода */
+.logout-button {
+  background-color: transparent;
+  color: inherit;
+  border: 3px solid currentColor;
+  padding: 0.5rem 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  font-family: inherit;
+  text-transform: uppercase;
+  transition: all 0.2s ease;
+}
+
+.logout-button:hover {
+  background-color: currentColor;
+  color: inherit;
+  filter: invert(100%);
+}

@@ -1,0 +1,10 @@
+/* src/components/Footer.css */
+
+.footer {
+  background-color: #000;
+  color: #fff;
+  padding: 1rem;
+  text-align: center;
+  font-family: 'Roboto Mono', monospace;
+  border-top: 4px solid #fff;
+}

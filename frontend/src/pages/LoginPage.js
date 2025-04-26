@@ -1,81 +1,29 @@
+// src/pages/LoginPage.js
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
+import LoginForm from '../components/LoginForm';
+import './LoginPage.css'; // обычные стили
 
-function LoginPage({ setAuthenticated, setUserInfo }) {
+function LoginPage() {
+  const location = useLocation();
+  const sessionExpired = location.state?.sessionExpired;
 
-    const [username, setUsername] = useState('');
-    const [password, setPassword] = useState('');
-    const navigate = useNavigate();
+  const [theme, setTheme] = useState('light'); // состояние темы
 
-    const handleLogin = async (event) => {
-        event.preventDefault();
+  const toggleTheme = () => {
+    setTheme((prev) => (prev === 'light' ? 'dark' : 'light'));
+  };
 
-        try {
-            // Явный logout перед login
-            await fetch('/logout', {
-                method: 'POST',
-                credentials: 'include'
-            });
-        } catch (error) {
-            console.warn('Ошибка logout перед login (может быть нормой, если не было активной сессии).');
-        }
-
-
-        const formData = new URLSearchParams();
-        formData.append('username', username);
-        formData.append('password', password);
-
-        try {
-            const response = await fetch('/login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: formData,
-                credentials: 'include'
-            });
-
-            if (response.ok) {
-                const authCheck = await fetch('/api/auth/me', { credentials: 'include' });
-                if (authCheck.ok) {
-                    const user = await authCheck.json();
-                    setAuthenticated(true);
-                    setUserInfo({ username: user.username, roles: user.roles.map(r => r.authority) });
-                    navigate('/notes');
-                } else {
-                    alert('Ошибка проверки авторизации');
-                }
-            } else {
-                alert('Ошибка авторизации');
-            }
-        } catch (error) {
-            console.error('Ошибка логина:', error);
-            alert('Ошибка соединения');
-        }
-    };
-
-    return (
-        <div style={{ textAlign: 'center', marginTop: '100px' }}>
-            <h2>Вход в VulnNotes</h2>
-            <form onSubmit={handleLogin}>
-                <input
-                    type="text"
-                    placeholder="Имя пользователя"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                    autoComplete="username"
-                    style={{ marginBottom: '10px' }}
-                /><br/>
-                <input
-                    type="password"
-                    placeholder="Пароль"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    autoComplete="current-password"
-                    style={{ marginBottom: '10px' }}
-                /><br/>
-                <button type="submit">Войти</button>
-            </form>
+  return (
+    <div className={`login-wrapper ${theme}-theme`}>
+      {sessionExpired && (
+        <div className="session-expired-message">
+          Ваша сессия истекла. Пожалуйста, войдите снова.
         </div>
-    );
+      )}
+      <LoginForm toggleTheme={toggleTheme} currentTheme={theme} />
+    </div>
+  );
 }
 
 export default LoginPage;
