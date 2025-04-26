@@ -21,8 +21,7 @@ public class WafFilter implements Filter {
     );
 
     private final Pattern xssPattern = Pattern.compile(
-            "<script|onerror=|onload=|javascript:",
-            Pattern.CASE_INSENSITIVE
+            "(?i)(<script.*?>|</script>|onerror\\s*=|onload\\s*=|javascript:|alert\\()"
     );
 
     @Override
@@ -34,24 +33,27 @@ public class WafFilter implements Filter {
             return;
         }
 
+        if (!(request instanceof HttpServletRequest)) {
+            chain.doFilter(request, response);
+            return;
+        }
+
         HttpServletRequest httpReq = (HttpServletRequest) request;
         HttpServletResponse httpResp = (HttpServletResponse) response;
 
         String uri = httpReq.getRequestURI();
-        String query = httpReq.getQueryString();
 
-        // Исключаем страницу с предупреждением, чтобы не зациклиться
+        // Пропустить страницу блокировки
         if (uri != null && uri.startsWith("/static/waf_blocked.html")) {
             chain.doFilter(request, response);
             return;
         }
 
-        // Проверка на опасные паттерны
-        boolean isMalicious = (query != null && (sqlInjectionPattern.matcher(query).find() || xssPattern.matcher(query).find())) ||
-                (uri != null && (sqlInjectionPattern.matcher(uri).find() || xssPattern.matcher(uri).find()));
+        // Оборачиваем запрос чтобы можно было читать тело
+        CachedBodyHttpServletRequest cachedRequest = new CachedBodyHttpServletRequest(httpReq);
 
-        if (isMalicious) {
-            System.out.println("[WAF] Заблокирован подозрительный запрос: " + uri + "?" + query);
+        if (isMalicious(cachedRequest)) {
+            System.out.println("[WAF] Заблокирован подозрительный запрос: " + uri);
 
             if (uri.startsWith("/api/")) {
                 httpResp.setStatus(HttpServletResponse.SC_FORBIDDEN);
@@ -63,6 +65,21 @@ public class WafFilter implements Filter {
             return;
         }
 
-        chain.doFilter(request, response);
+        // Всё чисто ➔ пропускаем дальше
+        chain.doFilter(cachedRequest, response);
+    }
+
+    private boolean isMalicious(CachedBodyHttpServletRequest request) throws IOException {
+        String uri = request.getRequestURI();
+        String query = request.getQueryString();
+        String body = "";
+
+        if ("POST".equalsIgnoreCase(request.getMethod()) && request.getContentType() != null && request.getContentType().contains("application/json")) {
+            body = request.getCachedBodyAsString();
+        }
+
+        return (query != null && (sqlInjectionPattern.matcher(query).find() || xssPattern.matcher(query).find())) ||
+                (uri != null && (sqlInjectionPattern.matcher(uri).find() || xssPattern.matcher(uri).find())) ||
+                (!body.isEmpty() && (sqlInjectionPattern.matcher(body).find() || xssPattern.matcher(body).find()));
     }
 }
