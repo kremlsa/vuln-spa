@@ -72,6 +72,7 @@
 }
 
 .user-avatar {
+  color: #FFF;
   font-size: 1.5rem;
   border: 3px solid currentColor;
   border-radius: 50%;

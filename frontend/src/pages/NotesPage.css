@@ -91,6 +91,18 @@ body {
   font-size: 1rem;
 }
 
+.note-item
+.note-input {
+  width: 100%;
+  box-sizing: border-box; /* <<< ОБЯЗАТЕЛЬНО! */
+  padding: 1rem;
+  border: 3px solid #000;
+  background-color: #e4e4e4;
+  font-family: inherit;
+  margin-bottom: 1rem;
+  font-size: 1rem;
+}
+
 .app.dark .note-form input,
 .app.dark .search-notes input {
   box-sizing: border-box;
@@ -129,10 +141,14 @@ body {
 }
 
 .note-list li {
+  margin: auto;
+  box-sizing: border-box;
   background-color: #e4e4e4;
   border: 3px solid #000;
   padding: 1rem;
   margin-bottom: 1rem;
+  margin-top: 1rem;
+  width: 95%;
   font-family: inherit;
   transition: background-color 0.3s;
 }

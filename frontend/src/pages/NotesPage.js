@@ -38,25 +38,25 @@ function NotesPage({ userInfo }) {
         fetchNotes();
     }, [navigate]);
 
-    const handleCreateNote = async (content) => {
-        if (!content.trim()) return;
+// Здесь BAC передаём автора на бэк
+const handleCreateNote = async (noteData) => {
+    if (!noteData.content.trim()) return;
 
-        try {
-            const response = await fetchWithAuth('/api/notes', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ content }),
-            }, navigate);
+    try {
+        const response = await fetch('/api/notes', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify(noteData), // сразу и content, и author
+        });
 
-            if (response) {
-                setNewNote('');
-                fetchNotes();
-            }
-        } catch (err) {
-            setError('Ошибка создания заметки');
-            console.error(err);
+        if (response.ok) {
+            fetchNotes();
         }
-    };
+    } catch (error) {
+        console.error('Ошибка при создании заметки:', error);
+    }
+};
 
     const handleDeleteNote = async (id) => {
         if (!window.confirm('Удалить заметку?')) return;
@@ -111,6 +111,7 @@ function NotesPage({ userInfo }) {
                         newNote={newNote}
                         setNewNote={setNewNote}
                         onCreate={handleCreateNote}
+                        username={userInfo.username}
                     />
                 )}
 
