@@ -1,3 +1,4 @@
+// src/pages/NotesPage.js
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
@@ -5,74 +6,119 @@ import Footer from '../components/Footer';
 import NoteForm from '../components/NoteForm';
 import NoteList from '../components/NoteList';
 import SearchNotes from '../components/SearchNotes';
-import { fetchWithErrorHandling } from '../utils/fetchWithErrorHandling';
+import { fetchWithAuth } from '../utils/fetchWithAuth';
+import './NotesPage.css';
 
 function NotesPage({ userInfo }) {
     const [notes, setNotes] = useState([]);
     const [newNote, setNewNote] = useState('');
     const [error, setError] = useState(null);
+    const [theme, setTheme] = useState('light'); // light или dark
+    const [loaded, setLoaded] = useState(false); // для fade-in анимации
     const navigate = useNavigate();
 
     const canCreate = userInfo.roles.includes('ROLE_USER') || userInfo.roles.includes('ROLE_ADMIN');
     const canDelete = userInfo.roles.includes('ROLE_ADMIN');
 
     const fetchNotes = async () => {
-        const data = await fetchWithErrorHandling('/api/notes', {}, setError);
-        if (data) setNotes(data);
+        try {
+            const response = await fetchWithAuth('/api/notes', {}, navigate);
+            if (response) {
+                const data = await response.json();
+                setNotes(data);
+                setLoaded(true); // После загрузки показать анимацию
+            }
+        } catch (err) {
+            setError('Ошибка загрузки заметок');
+            console.error(err);
+        }
     };
 
     useEffect(() => {
         fetchNotes();
-    }, []);
+    }, [navigate]);
 
     const handleCreateNote = async (content) => {
         if (!content.trim()) return;
 
-        const response = await fetchWithErrorHandling('/api/notes', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ content }),
-        }, setError);
+        try {
+            const response = await fetchWithAuth('/api/notes', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ content }),
+            }, navigate);
 
-        if (response) {
-            setNewNote('');
-            fetchNotes();
+            if (response) {
+                setNewNote('');
+                fetchNotes();
+            }
+        } catch (err) {
+            setError('Ошибка создания заметки');
+            console.error(err);
         }
     };
 
     const handleDeleteNote = async (id) => {
         if (!window.confirm('Удалить заметку?')) return;
 
-        const result = await fetchWithErrorHandling(`/api/notes/${id}`, {
-            method: 'DELETE',
-        }, setError);
+        try {
+            const response = await fetchWithAuth(`/api/notes/${id}`, {
+                method: 'DELETE',
+            }, navigate);
 
-        if (result !== null) {
-            fetchNotes();
+            if (response !== null) {
+                fetchNotes();
+            }
+        } catch (err) {
+            setError('Ошибка удаления заметки');
+            console.error(err);
         }
     };
 
     const handleLogout = async () => {
-        const result = await fetchWithErrorHandling('/logout', {
-            method: 'POST',
-        }, setError);
+        try {
+            const response = await fetchWithAuth('/logout', {
+                method: 'POST',
+            }, navigate);
 
-        if (result !== null) {
-            navigate('/login');
+            if (response !== null) {
+                navigate('/login');
+            }
+        } catch (err) {
+            setError('Ошибка выхода');
+            console.error(err);
         }
     };
 
+    const toggleTheme = () => {
+        setTheme((prev) => (prev === 'light' ? 'dark' : 'light'));
+    };
+
     return (
-        <div className="app">
-            <Header userInfo={userInfo} onLogout={handleLogout} />
-            <main className="main">
+        <div className={`app ${theme}`}>
+            <Header userInfo={userInfo} onLogout={handleLogout} theme={theme} />
+            <main className={`main ${loaded ? 'fade-in' : ''}`}>
+                <div className="theme-toggle">
+                    <button onClick={toggleTheme}>
+                        {theme === 'light' ? 'Тёмная тема' : 'Светлая тема'}
+                    </button>
+                </div>
+
                 {error && <div className="error-banner">⚠️ {error}</div>}
 
-                {canCreate &&
-                    <NoteForm newNote={newNote} setNewNote={setNewNote} onCreate={handleCreateNote} />
-                }
+                {canCreate && (
+                    <NoteForm
+                        newNote={newNote}
+                        setNewNote={setNewNote}
+                        onCreate={handleCreateNote}
+                    />
+                )}
 
-                <NoteList notes={notes} onDelete={canDelete ? handleDeleteNote : null} />
+                <NoteList
+                    notes={notes}
+                    onDelete={canDelete ? handleDeleteNote : null}
+                />
+
                 <SearchNotes />
             </main>
             <Footer />

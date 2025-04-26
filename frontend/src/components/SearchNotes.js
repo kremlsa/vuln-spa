@@ -1,61 +1,58 @@
+// src/components/SearchNotes.js
 import React, { useState } from 'react';
-import { fetchWithErrorHandling } from '../utils/fetchWithErrorHandling';
+import './SearchNotes.css';
 
 function SearchNotes() {
-    const [searchQuery, setSearchQuery] = useState('');
-    const [results, setResults] = useState([]);
-    const [error, setError] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [results, setResults] = useState([]);
+  const [searched, setSearched] = useState(false); // <<< Новый флаг "искали ли уже?"
 
-    const handleSearch = async (e) => {
-        e.preventDefault();
-        setError(null);
-        setResults([]);
+  const handleSearch = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await fetch(`/api/search?query=${encodeURIComponent(searchQuery)}`, {
+        credentials: 'include',
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setResults(data);
+        setSearched(true); // <<< Отмечаем что поиск был
+      }
+    } catch (error) {
+      console.error('Ошибка поиска:', error);
+    }
+  };
 
-        if (!searchQuery.trim()) {
-            setError("Введите текст для поиска");
-            return;
-        }
+  return (
+    <div className="search-notes">
+      <h2>Поиск заметок</h2>
+      <form onSubmit={handleSearch}>
+        <input
+          type="text"
+          placeholder="Введите запрос..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="search-input"
+          required
+        />
+        <button type="submit" className="search-button">Найти</button>
+      </form>
 
-        const data = await fetchWithErrorHandling(
-            `/api/search?query=${encodeURIComponent(searchQuery)}`,
-            {},
-            setError
-        );
-
-        if (data) setResults(data);
-    };
-
-    return (
-        <div className="form-card">
-            <h2>🔍 Поиск заметок</h2>
-            <form onSubmit={handleSearch}>
-                <input
-                    type="text"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="Введите текст"
-                    className="input"
-                />
-                <button type="submit" className="button">Искать</button>
-            </form>
-
-            {error && <div className="error-banner">⚠️ {error}</div>}
-
-            {results.length > 0 && (
-                <ul className="note-list">
-                    {results.map(note => (
-                        <li key={note.id} className="note-item">
-                            <div dangerouslySetInnerHTML={{ __html: note.content }} />
-                        </li>
-                    ))}
-                </ul>
-            )}
-
-            {results.length === 0 && searchQuery && !error && (
-                <p>Результатов нет.</p>
-            )}
-        </div>
-    );
+      {searched && (
+        <>
+          {results.length > 0 ? (
+            <ul className="search-results fade-in">
+              {results.map((note) => (
+                <li key={note.id}>{note.content}</li>
+              ))}
+            </ul>
+          ) : (
+            <div className="no-results">Ничего не найдено</div>
+          )}
+        </>
+      )}
+    </div>
+  );
 }
 
 export default SearchNotes;

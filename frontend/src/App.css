@@ -37,9 +37,9 @@ header {
     height: auto;
     width: 120px;
     margin-right: 10px;
-    background-color: #dddddd; /* Красный фон например */
-    padding: 8px;
-    border-radius: 8px; /* Скруглим края красиво */
+    background-color: #dddddd;
+    padding: 2px;
+    border-radius: 8px;
 }
 
 .site-name {
