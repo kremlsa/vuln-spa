@@ -1,19 +1,15 @@
-import React, { useState, useEffect } from 'react';
+// src/components/Footer.js
+import React from 'react';
+import './Footer.css';
 
 function Footer() {
-    const [currentDate, setCurrentDate] = useState('');
-
-    useEffect(() => {
-        const today = new Date();
-        const formattedDate = today.toLocaleDateString();
-        setCurrentDate(formattedDate);
-    }, []); // Пустой массив, чтобы запустить только один раз при монтировании
-
-    return (
-        <footer className="footer">
-            Текущая дата: {currentDate}
-        </footer>
-    );
+  return (
+    <footer className="footer">
+      <div className="footer-content">
+        © 2025 Vulnerable Application. https://gitlab.com/alexander.kremlev/vulnerable-spa.
+      </div>
+    </footer>
+  );
 }
 
 export default Footer;

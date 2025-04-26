@@ -1,0 +1,73 @@
+/* src/components/SearchNotes.css */
+
+
+.search-notes {
+  background-color: #fff;
+  border: 4px solid #000;
+  padding: 1.5rem;
+  font-family: 'Roboto Mono', monospace;
+}
+
+.search-notes h2 {
+  margin-bottom: 1rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  color: #000;
+}
+
+.search-input {
+  width: 100%;
+  box-sizing: border-box; /* <<< ОБЯЗАТЕЛЬНО! */
+  padding: 1rem;
+  border: 3px solid #000;
+  background-color: #e4e4e4;
+  font-family: inherit;
+  margin-bottom: 1rem;
+  font-size: 1rem;
+}
+
+.search-button {
+  background-color: #000;
+  color: #fff;
+  width: 100%;
+  padding: 1rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  border: none;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.search-button:hover {
+  background-color: #333;
+}
+
+.search-results {
+  margin-top: 1.5rem;
+  list-style-type: none;
+  padding: 0;
+}
+
+/* fade-in анимация для поиска */
+.fade-in {
+  animation: fadeIn 0.6s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.search-results li {
+  background-color: #e4e4e4;
+  border: 3px solid #000;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.no-results {
+  margin-top: 1rem;
+  font-weight: bold;
+  color: #ff4d4d;
+  text-align: center;
+}
