@@ -28,8 +28,8 @@ public class SecurityConfig {
                         .requestMatchers("/h2-console/**").permitAll()
                         .requestMatchers("/login").permitAll() // не забудь разрешить доступ к /login
                         .requestMatchers(HttpMethod.GET, "/api/notes/**").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/notes/**").hasRole("USER")
-                        .requestMatchers(HttpMethod.DELETE, "/api/notes/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/api/notes/**").hasAnyRole("USER", "ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/notes/**").hasAnyRole("USER", "ADMIN")
                         .requestMatchers("/api/**").authenticated()
 
                 )

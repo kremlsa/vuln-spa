@@ -21,11 +21,12 @@ public class NoteController {
         return noteRepository.findAll();
     }
 
+    /* Broken Access Control Не проверяем автора заметки, можно создавать заметки от чужого имени */
     @PostMapping
     public Note createNote(@RequestBody Note note) {
         return noteRepository.save(note);
     }
-
+    /* Broken Access Control Не проверяем автора заметки, можно удалять любые заметки */
     @DeleteMapping("/{id}")
     public void deleteNote(@PathVariable Long id) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
