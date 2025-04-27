@@ -1,9 +1,11 @@
 package vulnspa.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 import vulnspa.model.Note;
 import vulnspa.repository.NoteRepository;
 
@@ -31,6 +33,9 @@ public class NoteController {
     public void deleteNote(@PathVariable Long id) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         System.out.println("Удаляет пользователь: " + (auth != null ? auth.getName() : "Аноним"));
+        if (!noteRepository.existsById(id)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Note not found");
+        }
         noteRepository.deleteById(id);
     }
 }
