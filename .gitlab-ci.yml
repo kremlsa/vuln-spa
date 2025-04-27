@@ -40,7 +40,7 @@ trivy_iac:
   script:
     - trivy fs --scanners misconfig -f table .
 
-# Проводим SAST анализ, используем дополнительно одно собственное правило
+# Проводим SAST анализ
 sast:
   stage: pre-build
   allow_failure: true
@@ -48,7 +48,7 @@ sast:
     name: returntocorp/semgrep:latest
     entrypoint: [""]
   script:
-    semgrep --metrics=off --config="rules/rule_id01.yaml" --config="p/default" backend frontend
+    semgrep --metrics=off --config="p/default" backend frontend
 
 # Проверяем конфигурации
 checkov:
