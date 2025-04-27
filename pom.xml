@@ -1,19 +1,38 @@
+<!--
+  Корневой pom.xml файл для проекта
+  Используется для управления модулями и настройками общего уровня
+-->
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
          http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
+    <!-- Версия модели POM -->
     <modelVersion>4.0.0</modelVersion>
+
+    <!-- Уникальный идентификатор группы проекта -->
     <groupId>ssdlc.online</groupId>
+
+    <!-- Идентификатор артефакта (название проекта) -->
     <artifactId>Vulnspa</artifactId>
+
+    <!-- Версия проекта -->
     <version>1.0-SNAPSHOT</version>
+
+    <!-- Тип создаваемого артефакта: 'pom' означает, что это родительский POM
+    этот файл не собирает приложение сам, а координирует другие модули (например, backend/).
+    -->
     <packaging>pom</packaging>
 
+    <!-- Описание модулей проекта, указывает на дочерние модули Maven-проекта. -->
     <modules>
+        <!-- Подключение модуля backend -->
         <module>backend</module>
     </modules>
 
+    <!-- Свойства проекта -->
     <properties>
+        <!-- Версия Java, используемая для компиляции проекта -->
         <java.version>17</java.version>
     </properties>
 

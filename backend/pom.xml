@@ -1,63 +1,87 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- Корневой элемент Maven POM-файла -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <!-- Версия модели проекта -->
     <modelVersion>4.0.0</modelVersion>
+
+    <!-- Наследование от стандартного Spring Boot родительского проекта -->
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
         <version>3.1.0</version>
-        <relativePath/> <!-- lookup parent from repository -->
+        <relativePath/> <!-- Пусто, чтобы искать родителя в центральном репозитории Maven -->
     </parent>
+
+    <!-- Идентификатор группы проекта (обычно доменное имя наоборот) -->
     <groupId>ssdlc.online</groupId>
+
+    <!-- Уникальный идентификатор модуля/проекта -->
     <artifactId>backend</artifactId>
+
+    <!-- Свойства проекта -->
     <properties>
+        <!-- Переменная для отключения работы с фронтендом через профиль no-frontend -->
         <skip.frontend>false</skip.frontend>
     </properties>
 
+    <!-- Зависимости проекта -->
     <dependencies>
-        <!-- web -->
+
+        <!-- Зависимость Spring Boot для создания REST API -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
-        <!-- jpa -->
+
+        <!-- Зависимость Spring Boot для работы с базами данных через JPA -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-jpa</artifactId>
         </dependency>
-        <!-- security -->
+
+        <!-- Зависимость Spring Boot для настройки базовой безопасности приложения -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-security</artifactId>
         </dependency>
-        <!-- h2 database -->
+
+        <!-- Встраиваемая база данных H2 для разработки и тестирования -->
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
         </dependency>
-        <!-- Flyway db migrations -->
+
+        <!-- Flyway для управления миграциями базы данных -->
         <dependency>
             <groupId>org.flywaydb</groupId>
             <artifactId>flyway-core</artifactId>
         </dependency>
     </dependencies>
 
+    <!-- Конфигурация сборки проекта -->
     <build>
         <plugins>
-            <!-- Плагин для Spring Boot -->
+
+            <!-- Плагин Spring Boot для упаковки приложения в исполняемый JAR -->
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
             </plugin>
 
-            <!-- Плагин для работы с фронтендом (npm + react-scripts build) -->
+            <!-- Плагин для работы с фронтендом (npm + react-scripts build)
+            для автоматической сборки фронтенда (React) через Maven
+            -->
             <plugin>
                 <groupId>com.github.eirslett</groupId>
                 <artifactId>frontend-maven-plugin</artifactId>
                 <version>1.12.0</version>
 
                 <configuration>
+                    <!-- Папка с фронтендом -->
                     <workingDirectory>../frontend</workingDirectory>
+                    <!-- Позволяет пропускать сборку фронта через профиль -->
                     <skip>${skip.frontend}</skip>
                 </configuration>
 
@@ -75,7 +99,7 @@
                         </configuration>
                     </execution>
 
-                    <!-- Установка зависимостей -->
+                    <!-- Установка npm зависимостей -->
                     <execution>
                         <id>npm install</id>
                         <goals>
@@ -87,7 +111,7 @@
                         </configuration>
                     </execution>
 
-                    <!-- Сборка фронтенда -->
+                    <!-- Сборка фронтенда (npm run build) -->
                     <execution>
                         <id>npm run build</id>
                         <goals>
@@ -103,13 +127,13 @@
             </plugin>
 
 
-            <!-- Плагин для копирования build файлов фронта в static -->
+            <!-- Плагин для копирования файлов фронтенда в папку ресурсов Spring Boot -->
             <plugin>
                 <artifactId>maven-resources-plugin</artifactId>
                 <version>3.2.0</version>
                 <executions>
 
-                    <!-- Копировать в target/classes/static для JAR -->
+                    <!-- Копирование собранных фронтенд-файлов в target/classes/static -->
                     <execution>
                         <id>copy-resources-to-target</id>
                         <phase>process-resources</phase>
@@ -117,9 +141,11 @@
                             <goal>copy-resources</goal>
                         </goals>
                         <configuration>
+                            <!-- Куда копировать -->
                             <outputDirectory>${project.build.outputDirectory}/static</outputDirectory>
                             <resources>
                                 <resource>
+                                    <!-- Откуда брать файлы -->
                                     <directory>../frontend/build</directory>
                                     <filtering>false</filtering>
                                 </resource>
@@ -127,10 +153,10 @@
                         </configuration>
                     </execution>
 
-                    <!-- Копировать в src/main/resources/static для dev-режима -->
+                    <!-- Копирование собранных файлов во время разработки в src/main/resources/static -->
                     <execution>
                         <id>copy-resources-to-src</id>
-                        <phase>generate-resources</phase> <!-- или validate, чтобы раньше -->
+                        <phase>generate-resources</phase> <!-- Ранняя стадия -->
                         <goals>
                             <goal>copy-resources</goal>
                         </goals>
@@ -148,15 +174,18 @@
 
                 </executions>
             </plugin>
-
-
         </plugins>
     </build>
 
+    <!-- Профили Maven для управления параметрами сборки -->
     <profiles>
         <profile>
+            <!-- Профиль без сборки фронтенда
+            запускать с ключом -Pno-frontend
+            -->
             <id>no-frontend</id>
             <properties>
+                <!-- Пропустить стадии фронтенда -->
                 <skip.frontend>true</skip.frontend>
             </properties>
         </profile>
