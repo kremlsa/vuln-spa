@@ -58,6 +58,10 @@ vulnerable-spa/
 ├── pom.xml                         # Файл конфигурации проекта Maven
 └── README.md                       # Документация проекта 
 ```
+---
+**Схемы**
+
+- [Схема сборки](docs/Maven-vuild.md)
 
 ---
 
