@@ -51,6 +51,10 @@ public class WafFilter implements Filter {
 
         // Оборачиваем запрос чтобы можно было читать тело
         CachedBodyHttpServletRequest cachedRequest = new CachedBodyHttpServletRequest(httpReq);
+        System.out.println("[WAF] Incoming request method: " + httpReq.getMethod());
+        System.out.println("[WAF] Incoming request URI: " + httpReq.getRequestURI());
+        System.out.println("[WAF] Incoming request content-type: " + httpReq.getContentType());
+        System.out.println("[WAF] Incoming request content-length: " + httpReq.getContentLength());
 
         if (isMalicious(cachedRequest)) {
             System.out.println("[WAF] Заблокирован подозрительный запрос: " + uri);
@@ -58,7 +62,10 @@ public class WafFilter implements Filter {
             if (uri.startsWith("/api/")) {
                 httpResp.setStatus(HttpServletResponse.SC_FORBIDDEN);
                 httpResp.setContentType("application/json");
+                httpResp.setCharacterEncoding("UTF-8");
                 httpResp.getWriter().write("{\"error\": \"WAF: Blocked for security reason\"}");
+                httpResp.flushBuffer();
+                return;
             } else {
                 httpResp.sendRedirect("/static/waf_blocked.html");
             }
@@ -77,6 +84,11 @@ public class WafFilter implements Filter {
         if ("POST".equalsIgnoreCase(request.getMethod()) && request.getContentType() != null && request.getContentType().contains("application/json")) {
             body = request.getCachedBodyAsString();
         }
+
+        System.out.println("[WAF] Проверка запроса:");
+        System.out.println("URI: " + uri);
+        System.out.println("QUERY: " + query);
+        System.out.println("BODY: " + body);
 
         return (query != null && (sqlInjectionPattern.matcher(query).find() || xssPattern.matcher(query).find())) ||
                 (uri != null && (sqlInjectionPattern.matcher(uri).find() || xssPattern.matcher(uri).find())) ||
