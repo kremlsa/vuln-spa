@@ -1,102 +1,12 @@
-stages:
-  - pre-build
-  - package
-  - build
-  - postbuild
 
-variables:
-  # Имя образа в реестре
-  IMAGE_NAME: "${CI_REGISTRY_IMAGE}/${CI_COMMIT_REF_SLUG}:latest"
-  MAVEN_CLI_OPTS: " --batch-mode"
-  GIT_STRATEGY: clone
-
-# # Ищем секреты в репозитории
-trivy_secret_detection:
-  stage: pre-build
-  image:
-    name: aquasec/trivy:latest
-    entrypoint: [""]
+ai_review:
+  stage: test
+  image: python:3.10
+  only:
+    - merge_requests
   script:
-    - trivy fs --scanners secret -f table .
-
-# # Проверяем на уязвимые зависимости файлы пакетных менеджеров
-trivy_sca:
-  stage: pre-build
-  image:
-    name: aquasec/trivy:latest
-    entrypoint: [""]
-  script:
-    - trivy fs --scanners vuln -f table .
-
-# # Проверяем доступные конфигурации IaC
-trivy_iac:
-  stage: pre-build
-  image:
-    name: aquasec/trivy:latest
-    entrypoint: [""]
-  script:
-    - trivy fs --scanners misconfig -f table .
-
-# Проводим SAST анализ, используем дополнительно одно собственное правило
-sast:
-  stage: pre-build
-  allow_failure: true
-  image:
-    name: returntocorp/semgrep:latest
-    entrypoint: [""]
-  script:
-    semgrep --metrics=off --config="rules/rule_id01.yaml" --config="p/default" .
-
-# Проверяем конфигурации
-checkov:
-  stage: pre-build
-  allow_failure: true  # True for AutoDevOps compatibility
-  image:
-    name: bridgecrew/checkov:latest
-    entrypoint:
-      - '/usr/bin/env'
-      - 'PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'
-  rules:
-    - if: $SAST_DISABLED
-      when: never
-    - if: $CI_COMMIT_BRANCH
-      exists:
-        - '**/*.yml'
-        - '**/*.yaml'
-        - '**/*.json'
-        - '**/*.template'
-        - '**/*.tf'      
-        - '**/serverless.yml'
-        - '**/serverless.yaml'
-  script:
-    # Use `script` to emulate `tty` for colored output.
-    - script -q -c 'checkov -d . ; echo $? > CKVEXIT'
-    - exit $(cat CKVEXIT)
-
-# Собираем образ приложения и публикуем в реестре
-kaniko-build:
-  image:
-    name: gcr.io/kaniko-project/executor:v1.9.0-debug
-    entrypoint: [""]
-  stage: build
-  script:
-    - /kaniko/executor
-      --context "${CI_PROJECT_DIR}"
-      --dockerfile "${CI_PROJECT_DIR}/Dockerfile"
-      --destination "${IMAGE_NAME}"
-  rules:
-    - if: $CI_COMMIT_BRANCH
-      exists:
-        - Dockerfile
-
-# Проверяем безопасность собранного образа контейнера
-container-scan:
+    - pip install openai requests
+    - python3 ai_review_bot.py
   variables:
-    GIT_STRATEGY: "none"
-  stage: postbuild
-  image:
-    name: aquasec/trivy:latest
-    entrypoint: [""]
-  script:
-    - trivy image "$IMAGE_NAME" -f table
-
+    GITLAB_TOKEN: $GITLAB_TOKEN
+    OPENAI_API_KEY: $OPENAI_API_KEY
