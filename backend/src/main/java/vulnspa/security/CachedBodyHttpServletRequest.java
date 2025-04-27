@@ -6,9 +6,7 @@ import jakarta.servlet.ServletRequest;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletRequestWrapper;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 
 public class CachedBodyHttpServletRequest extends HttpServletRequestWrapper {
@@ -17,13 +15,13 @@ public class CachedBodyHttpServletRequest extends HttpServletRequestWrapper {
 
     public CachedBodyHttpServletRequest(HttpServletRequest request) throws IOException {
         super(request);
-        InputStream requestInputStream = request.getInputStream();
-        this.cachedBody = requestInputStream.readAllBytes();
+        cachedBody = request.getInputStream().readAllBytes(); // Считываем тело один раз
     }
 
     @Override
     public ServletInputStream getInputStream() {
-        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(this.cachedBody);
+        final ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(cachedBody);
+
         return new ServletInputStream() {
             @Override
             public int read() {
@@ -42,9 +40,14 @@ public class CachedBodyHttpServletRequest extends HttpServletRequestWrapper {
 
             @Override
             public void setReadListener(ReadListener readListener) {
-                throw new UnsupportedOperationException();
+                // ничего не делаем
             }
         };
+    }
+
+    @Override
+    public BufferedReader getReader() {
+        return new BufferedReader(new InputStreamReader(getInputStream(), StandardCharsets.UTF_8));
     }
 
     public String getCachedBodyAsString() {
