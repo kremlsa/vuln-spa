@@ -1,41 +1,92 @@
 stages:
-  - cloc_report
+  - generate_sbom
+  - generate_reports
   - deploy_to_wiki
 
+generate_sbom:
+  stage: generate_sbom
+  image: anchore/syft:latest
+  script:
+    - mkdir -p artifacts
+    - syft dir:. -o json > artifacts/sbom.json
+  artifacts:
+    paths:
+      - artifacts/sbom.json
+    expire_in: 1 week
 
-generate_cloc_report:
-  stage: cloc_report
+generate_reports:
+  stage: generate_reports
   image: python:3.12-slim
+  dependencies:
+    - generate_sbom
   before_script:
-    - apt-get update && apt-get install -y cloc jq curl dos2unix
+    - apt-get update && apt-get install -y cloc jq curl dos2unix git coreutils
     - dos2unix generate_index.sh
+    - dos2unix generate_sbom_index.sh
   script:
     - mkdir -p out
+    # Генерация CLOC отчета
     - cloc . --exclude-dir=.git --json --out=cloc-report.json
-    - bash generate_index.sh cloc-report.json out/index.html
+    - bash generate_index.sh cloc-report.json out/cloc-report.html
+    # Генерация SBOM отчета из артефакта
+    - bash generate_sbom_index.sh artifacts/sbom.json out/sbom-report.html
   artifacts:
     paths:
       - out
     expire_in: 1 week
 
-wiki:
+deploy_to_wiki:
   stage: deploy_to_wiki
   image: alpine/git
   variables:
     GIT_STRATEGY: none
   before_script:
-    - apk add --no-cache bash
+    - apk add --no-cache bash coreutils
   script:
     - git clone https://oauth2:${CI_JOB_TOKEN}@gitlab.com/${CI_PROJECT_PATH}.wiki.git wiki
-    - cp out/index.html wiki/cloc-report.html
     - cd wiki
+    - if git show-ref --quiet refs/heads/cloc-report; then git checkout cloc-report; else git checkout -b cloc-report; fi
+    - cp ../out/cloc-report.html cloc-report.html
+    - cp ../out/sbom-report.html sbom-report.html
+    - REPORT_DATE=$(date -u +"%Y-%m-%d %H:%M UTC")
+    # Генерация Reports.md
+    - echo "| Отчёт | Ссылка | Дата обновления |" > Reports.md
+    - echo "|:------|:-------|:----------------|" >> Reports.md
+    - echo "| CLOC Отчёт | [cloc-report.html](cloc-report.html) | ${REPORT_DATE} |" >> Reports.md
+    - echo "| SBOM Отчёт | [sbom-report.html](sbom-report.html) | ${REPORT_DATE} |" >> Reports.md
+    # Генерация Home.md
+    - |
+      cat > Home.md <<EOF
+      # Добро пожаловать в документацию проекта
+
+      Это автоматическая Wiki для публикации отчетов CI/CD.
+
+      ## Отчёты
+
+      | Название отчёта | Ссылка | Дата обновления |
+      |:----------------|:-------|:----------------|
+      | CLOC Отчёт | [CLOC Отчёт](cloc-report.html) | ${REPORT_DATE} |
+      | SBOM Отчёт | [SBOM Отчёт](sbom-report.html) | ${REPORT_DATE} |
+
+      ---
+
+      ## Описание
+
+      - **CLOC Отчёт** — анализ количества строк кода по языкам программирования.
+      - **SBOM Отчёт** — список всех зависимостей проекта в формате Software Bill of Materials (SBOM).
+
+      ---
+
+      _Эта страница обновляется автоматически при каждом деплое._
+      EOF
+    # Пушим изменения
     - git config user.email "gitlab-ci@example.com"
     - git config user.name "GitLab CI"
-    - git add cloc-report.html
+    - git add cloc-report.html sbom-report.html Reports.md
     - |
       if ! git diff --cached --quiet; then
-        git commit -m "Update CLOC report [skip ci]"
-        git push origin HEAD
+        git commit -m "Update CLOC & SBOM reports [skip ci]"
+        git push origin cloc-report
       else
         echo "No changes to commit."
       fi
