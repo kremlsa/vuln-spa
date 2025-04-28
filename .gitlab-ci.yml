@@ -4,11 +4,15 @@ stages:
   - deploy_to_wiki
 
 generate_sbom:
+  variables:
+    GIT_STRATEGY: clone
   stage: generate_sbom
-  image: anchore/syft:latest
+  image:
+    name: docker.io/anchore/syft:debug
+    entrypoint: [""]
   script:
     - mkdir -p artifacts
-    - syft dir:. -o json > artifacts/sbom.json
+    - /syft --output cyclonedx-json=artifacts/sbom.json scan dir:/
   artifacts:
     paths:
       - artifacts/sbom.json
