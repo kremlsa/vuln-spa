@@ -1,11 +1,16 @@
-ai_review:
-  stage: test
-  image: python:3.10
+stages:
+  - review
+
+ai_code_review:
+  stage: review
+  image: docker.io/kremlsa/ai-mr-bot:latest
+  variables:
+    GITLAB_TOKEN: $GITLAB_TOKEN          # Токен для доступа к API GitLab MR
+    OPENAI_API_KEY: $OPENAI_API_KEY       # Только если используешь OpenAI
+    OPENAI_API_BASE_URL: https://api.openai.com/v1 # Например, http://localhost:11434/v1 для локалки
+    OPENAI_MODEL: gpt-4o         # Например, gpt-4o, llama3, codellama
+  script:
+    - echo "Запуск AI ревью бота..."
+    - ./ai_review_bot
   only:
     - merge_requests
-  script:
-    - pip install openai requests
-    - python3 ai_review_bot.py
-  variables:
-    GITLAB_TOKEN: $GITLAB_TOKEN
-    OPENAI_API_KEY: $OPENAI_API_KEY
