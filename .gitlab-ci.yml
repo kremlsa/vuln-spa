@@ -10,7 +10,7 @@ generate_cloc_report:
     - apt-get update && apt-get install -y cloc jq curl dos2unix
     - dos2unix generate_index.sh
   script:
-    - mkdir -p public
+    - mkdir -p out
     - cloc . --exclude-dir=.git --json --out=cloc-report.json
     - bash generate_index.sh cloc-report.json out/index.html
   artifacts:
