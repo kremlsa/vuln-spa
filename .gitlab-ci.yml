@@ -49,7 +49,12 @@ deploy_to_wiki:
   script:
     - git clone https://oauth2:${CI_JOB_TOKEN}@gitlab.com/${CI_PROJECT_PATH}.wiki.git wiki
     - cd wiki
-    - if git show-ref --quiet refs/heads/cloc-report; then git checkout cloc-report; else git checkout -b cloc-report; fi
+    - |
+      if git show-ref --quiet refs/heads/cloc-report; then
+       git checkout cloc-report
+      else
+       git checkout -b cloc-report
+      fi
     - cp ../out/cloc-report.html cloc-report.html
     - cp ../out/sbom-report.html sbom-report.html
     - REPORT_DATE=$(date -u +"%Y-%m-%d %H:%M UTC")
