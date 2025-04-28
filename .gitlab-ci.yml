@@ -40,5 +40,4 @@ wiki:
         echo "No changes to commit."
       fi
   only:
-    - main
-    - master
+    - wiki
