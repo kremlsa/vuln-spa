@@ -1,6 +1,7 @@
 // src/components/Footer.js
 import React from 'react';
 import './Footer.css';
+import FooterDownload from './FooterDownload';
 
 function Footer() {
   return (
@@ -8,6 +9,7 @@ function Footer() {
       <div className="footer-content">
         © 2025 Vulnerable Application. https://gitlab.com/alexander.kremlev/vulnerable-spa.
       </div>
+      <FooterDownload />
     </footer>
   );
 }
