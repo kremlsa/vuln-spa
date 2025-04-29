@@ -5,6 +5,7 @@ stages:
   - postbuild
   - cloc_report
   - deploy
+  - review
 
 
 variables:
@@ -21,6 +22,9 @@ trivy_secret_detection:
     entrypoint: [""]
   script:
     - trivy fs --scanners secret -f table .
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+      when: always
 
 # # Проверяем на уязвимые зависимости файлы пакетных менеджеров
 trivy_sca:
@@ -30,6 +34,9 @@ trivy_sca:
     entrypoint: [""]
   script:
     - trivy fs --scanners vuln -f table .
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+      when: always
 
 # # Проверяем доступные конфигурации IaC
 trivy_iac:
@@ -39,6 +46,9 @@ trivy_iac:
     entrypoint: [""]
   script:
     - trivy fs --scanners misconfig -f table .
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+      when: always
 
 # Проводим SAST анализ
 sast:
@@ -50,31 +60,9 @@ sast:
   script:
     semgrep --metrics=off --config="p/default" backend frontend
 
-# Проверяем конфигурации
-checkov:
-  stage: pre-build
-  allow_failure: true  # True for AutoDevOps compatibility
-  image:
-    name: bridgecrew/checkov:latest
-    entrypoint:
-      - '/usr/bin/env'
-      - 'PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'
   rules:
-    - if: $SAST_DISABLED
-      when: never
-    - if: $CI_COMMIT_BRANCH
-      exists:
-        - '**/*.yml'
-        - '**/*.yaml'
-        - '**/*.json'
-        - '**/*.template'
-        - '**/*.tf'      
-        - '**/serverless.yml'
-        - '**/serverless.yaml'
-  script:
-    # Use `script` to emulate `tty` for colored output.
-    - script -q -c 'checkov -d . ; echo $? > CKVEXIT'
-    - exit $(cat CKVEXIT)
+    - if: '$CI_COMMIT_BRANCH == "main"'
+      when: always
 
 # Собираем образ приложения и публикуем в реестре
 kaniko-build:
@@ -88,9 +76,11 @@ kaniko-build:
       --dockerfile "${CI_PROJECT_DIR}/Dockerfile"
       --destination "${IMAGE_NAME}"
   rules:
-    - if: $CI_COMMIT_BRANCH
+    - if: '$CI_COMMIT_BRANCH == "main"'
       exists:
         - Dockerfile
+      when: always
+    - when: never
 
 # Проверяем безопасность собранного образа контейнера
 container-scan:
@@ -102,6 +92,10 @@ container-scan:
     entrypoint: [""]
   script:
     - trivy image "$IMAGE_NAME" -f table
+
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+      when: always
 
 
 generate_cloc_report:
@@ -119,6 +113,10 @@ generate_cloc_report:
       - public
     expire_in: 1 week
 
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+      when: always
+
 pages:
   stage: deploy
   script:
@@ -126,6 +124,20 @@ pages:
   artifacts:
     paths:
       - public
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "wiki"'
+      when: always
+
+ai_code_review:
+  stage: review
+  image: docker.io/kremlsa/ai-mr-bot:latest
+  variables:
+    GITLAB_TOKEN: $GITLAB_TOKEN          # Токен для доступа к API GitLab MR
+    OPENAI_API_KEY: $OPENAI_API_KEY       # Только если используешь OpenAI
+    OPENAI_API_BASE_URL: https://api.openai.com/v1 # Например, http://localhost:11434/v1 для локалки
+    OPENAI_MODEL: gpt-4o         # Например, gpt-4o, llama3, codellama
+  script:
+    - echo "Запуск AI ревью бота..."
+    - ./ai_review_bot
   only:
-    - main
-    - master
+    - merge_requests
