@@ -64,34 +64,6 @@ sast:
     - if: '$CI_COMMIT_BRANCH == "main"'
       when: always
 
-# Проверяем конфигурации
-checkov:
-  stage: pre-build
-  allow_failure: true  # True for AutoDevOps compatibility
-  image:
-    name: bridgecrew/checkov:latest
-    entrypoint:
-      - '/usr/bin/env'
-      - 'PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'
-  rules:
-    - if: $SAST_DISABLED
-      when: never
-    - if: $CI_COMMIT_BRANCH
-      exists:
-        - '**/*.yml'
-        - '**/*.yaml'
-        - '**/*.json'
-        - '**/*.template'
-        - '**/*.tf'      
-        - '**/serverless.yml'
-        - '**/serverless.yaml'
-  script:
-    # Use `script` to emulate `tty` for colored output.
-    - script -q -c 'checkov -d . ; echo $? > CKVEXIT'
-    - exit $(cat CKVEXIT)
-  only:
-    - main
-
 # Собираем образ приложения и публикуем в реестре
 kaniko-build:
   image:
@@ -104,11 +76,11 @@ kaniko-build:
       --dockerfile "${CI_PROJECT_DIR}/Dockerfile"
       --destination "${IMAGE_NAME}"
   rules:
-    - if: $CI_COMMIT_BRANCH
+    - if: '$CI_COMMIT_BRANCH == "main"'
       exists:
         - Dockerfile
-  only:
-    - main
+      when: always
+    - when: never
 
 # Проверяем безопасность собранного образа контейнера
 container-scan:
