@@ -85,12 +85,12 @@ checkov:
         - '**/*.tf'      
         - '**/serverless.yml'
         - '**/serverless.yaml'
-    - if: '$CI_COMMIT_BRANCH == "main"'
-      when: always
   script:
     # Use `script` to emulate `tty` for colored output.
     - script -q -c 'checkov -d . ; echo $? > CKVEXIT'
     - exit $(cat CKVEXIT)
+  only:
+    - main
 
 # Собираем образ приложения и публикуем в реестре
 kaniko-build:
@@ -107,8 +107,8 @@ kaniko-build:
     - if: $CI_COMMIT_BRANCH
       exists:
         - Dockerfile
-    - if: '$CI_COMMIT_BRANCH == "main"'
-      when: always
+  only:
+    - main
 
 # Проверяем безопасность собранного образа контейнера
 container-scan:
