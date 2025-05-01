@@ -1,0 +1,99 @@
+/* src/components/ProfileForm.css */
+
+.profile-form {
+  padding: 2rem;
+  border: 3px solid;
+  width: 100%;
+  max-width: 500px;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  font-family: 'Roboto Mono', monospace;
+  transition: background-color 0.3s, color 0.3s;
+}
+
+/* Светлая тема */
+.profile-form.light {
+  background-color: #fff;
+  border-color: #000;
+  color: #000;
+}
+
+/* Тёмная тема */
+.profile-form.dark {
+  background-color: #000;
+  border-color: #fff;
+  color: #fff;
+}
+
+.profile-title {
+  font-size: 1.8rem;
+  font-weight: 900;
+  margin-bottom: 1rem;
+}
+
+.profile-info p {
+  margin: 0.3rem 0;
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.password-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.password-form label {
+  font-size: 0.9rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.password-form input {
+  padding: 0.8rem;
+  font-size: 1rem;
+  border: 2px solid;
+  outline: none;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.profile-form.light .password-form input {
+  background-color: #e4e4e4;
+  border-color: #000;
+  color: #000;
+}
+
+.profile-form.dark .password-form input {
+  background-color: #333;
+  border-color: #fff;
+  color: #fff;
+}
+
+.update-button {
+  margin-top: 1rem;
+  background-color: #000;
+  color: #fff;
+  border: none;
+  padding: 1rem;
+  font-weight: 900;
+  font-size: 1rem;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.profile-form.dark .update-button {
+  background-color: #fff;
+  color: #000;
+}
+
+.error {
+  color: red;
+  font-weight: 700;
+}
+
+.success {
+  color: green;
+  font-weight: 700;
+}

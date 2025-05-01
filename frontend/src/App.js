@@ -4,7 +4,9 @@ import LoginPage from './pages/LoginPage';
 import RegistrationPage from './pages/RegistrationPage';
 import NotesPage from './pages/NotesPage';
 import ProtectedRoute from './components/ProtectedRoute';
+import ProfilePage from './pages/ProfilePage';
 import './App.css';
+import './AppTheme.css';
 
 function App() {
   const [authenticated, setAuthenticated] = useState(false);
@@ -70,7 +72,21 @@ function App() {
           path="/notes"
           element={
             <ProtectedRoute authenticated={authenticated}>
-              <NotesPage userInfo={userInfo} />
+              <NotesPage
+               currentTheme={theme}
+               toggleTheme={toggleTheme}
+               userInfo={userInfo} />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/profile"
+          element={
+            <ProtectedRoute authenticated={authenticated}>
+              <ProfilePage
+                currentTheme={theme}
+                toggleTheme={toggleTheme}
+               />
             </ProtectedRoute>
           }
         />

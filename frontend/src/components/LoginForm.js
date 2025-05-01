@@ -59,7 +59,7 @@ export default function LoginForm({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="login-form">
+    <form onSubmit={handleSubmit} className={`login-form ${currentTheme}`}>
       <h1>Вход</h1>
 
       {error && <div className="error">{error}</div>}

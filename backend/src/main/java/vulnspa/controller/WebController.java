@@ -2,13 +2,14 @@ package vulnspa.controller;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 
 @Controller
 public class WebController {
 
-    // Любые пути, кроме /api/**, возвращают index.html
-    @GetMapping({"/", "/login", "/register", "/notes", "/notes/**"})
-    public String forwardToIndex() {
+    // Обрабатываем всё, кроме /api/** и файлов с расширениями (например .js, .css, .png)
+    @RequestMapping(value = { "/{path:^(?!api|static|h2-console|favicon\\.ico|.*\\..*).*}" })
+    public String redirect() {
         return "forward:/index.html";
     }
 }

@@ -87,6 +87,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.DELETE, "/api/notes/**")
                         .hasAnyRole("USER","ADMIN")
                         .requestMatchers("/api/vip/**").authenticated()
+                        .requestMatchers("/api/profile/**").authenticated()
                         // всё остальное — открыто
                         .anyRequest().permitAll()
                 )

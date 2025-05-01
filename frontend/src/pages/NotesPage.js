@@ -9,10 +9,9 @@ import SearchNotes from '../components/SearchNotes';
 import { fetchWithAuth } from '../utils/fetchWithAuth';
 import './NotesPage.css';
 
-function NotesPage({ userInfo }) {
+function NotesPage({ userInfo, currentTheme, toggleTheme }) {
   const [notes, setNotes] = useState([]);
   const [error, setError] = useState(null);
-  const [theme, setTheme] = useState('light'); // light или dark
   const [loaded, setLoaded] = useState(false); // для fade-in анимации
   const navigate = useNavigate();
 
@@ -93,23 +92,19 @@ function NotesPage({ userInfo }) {
     }
   };
 
-  const toggleTheme = () => {
-    setTheme(prev => (prev === 'light' ? 'dark' : 'light'));
-  };
-
   return (
-    <div className={`app ${theme}`}>
+    <div className={`app ${currentTheme}`}>
       <Header
         userInfo={userInfo}
         onLogout={handleLogout}
-        theme={theme}
+        currentTheme={currentTheme}
         isVip={isVip}
         setIsVip={setIsVip}
       />
       <main className={`main ${loaded ? 'fade-in' : ''}`}>
         <div className="theme-toggle">
           <button onClick={toggleTheme}>
-            {theme === 'light' ? 'Тёмная тема' : 'Светлая тема'}
+            {currentTheme === 'light' ? 'Тёмная тема' : 'Светлая тема'}
           </button>
         </div>
 
