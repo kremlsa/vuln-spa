@@ -17,6 +17,8 @@ function NotesPage({ userInfo }) {
     const [loaded, setLoaded] = useState(false); // для fade-in анимации
     const navigate = useNavigate();
 
+    const [isVip, setIsVip] = useState(false);
+
     const canCreate = userInfo.roles.includes('ROLE_USER') || userInfo.roles.includes('ROLE_ADMIN');
     const canDelete = userInfo.roles.includes('ROLE_ADMIN');
 
@@ -96,7 +98,7 @@ const handleCreateNote = async (noteData) => {
 
     return (
         <div className={`app ${theme}`}>
-            <Header userInfo={userInfo} onLogout={handleLogout} theme={theme} />
+            <Header userInfo={userInfo} onLogout={handleLogout} theme={theme} setIsVip={setIsVip} isVip={isVip}/>
             <main className={`main ${loaded ? 'fade-in' : ''}`}>
                 <div className="theme-toggle">
                     <button onClick={toggleTheme}>

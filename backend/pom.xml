@@ -24,6 +24,8 @@
     <properties>
         <!-- Переменная для отключения работы с фронтендом через профиль no-frontend -->
         <skip.frontend>false</skip.frontend>
+        <start-class>vulnspa.VulnerableSpaApplication</start-class>
+        <jib.target.image>docker.io/kremlsa/vulnerable-spa:latest</jib.target.image>
     </properties>
 
     <!-- Зависимости проекта -->
@@ -188,6 +190,32 @@
                     </execution>
 
                 </executions>
+            </plugin>
+
+
+
+            <plugin>
+                <groupId>com.google.cloud.tools</groupId>
+                <artifactId>jib-maven-plugin</artifactId>
+                <version>3.4.0</version>
+                <configuration>
+                    <from>
+                        <image>eclipse-temurin:17-jre-alpine</image>
+                    </from>
+                    <to>
+                        <image>${jib.target.image}</image>
+                    </to>
+                    <container>
+                        <mainClass>${start-class}</mainClass>
+                        <ports>
+                            <port>8080</port>
+                        </ports>
+                        <jvmFlags>
+                            <jvmFlag>-XX:+UseContainerSupport</jvmFlag>
+                            <jvmFlag>-Djava.security.egd=file:/dev/./urandom</jvmFlag>
+                        </jvmFlags>
+                    </container>
+                </configuration>
             </plugin>
         </plugins>
     </build>
