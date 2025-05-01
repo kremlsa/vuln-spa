@@ -1,5 +1,6 @@
 package vulnspa.service;// src/main/java/.../service/UserService.java
 import org.springframework.http.HttpStatus;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -15,9 +16,14 @@ import java.util.Map;
 public class UserService {
     private final UserRepository userRepo;
     private Md5PasswordEncoder passwordEncoder;
+    private JdbcTemplate jdbc;
 
-    public UserService(UserRepository userRepo) {
+    public UserService(UserRepository userRepo,
+                       Md5PasswordEncoder passwordEncoder,
+                       JdbcTemplate jdbc) {
         this.userRepo = userRepo;
+        this.passwordEncoder = passwordEncoder;
+        this.jdbc        = jdbc;
     }
 
     public void register(User user) {
@@ -26,10 +32,14 @@ public class UserService {
                     HttpStatus.CONFLICT, "Username already exists"
             );
         }
-
         user.setPassword(passwordEncoder.encode(user.getPassword()));
-
         userRepo.save(user);
+
+        // Вставляем роль USER
+        jdbc.update(
+                "INSERT INTO AUTHORITIES(username, authority) VALUES (?, ?)",
+                user.getUsername(), "ROLE_USER"
+        );
     }
 
     public Map<String, Object> getCurrentUser() {

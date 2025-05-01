@@ -1,6 +1,5 @@
 // src/components/Header.js
 import React, { useState, useEffect } from 'react';
-import VipRequestButton from './VipRequestButton';
 import VipStatusBanner from './VipStatusBanner';
 import './Header.css';
 
@@ -33,13 +32,15 @@ function Header({ userInfo, onLogout, theme, isVip, setIsVip }) {
             </div>
             <div className="user-info">
               <div className="user-name">{userInfo?.username}</div>
-              <div className="user-role">{userInfo?.roles?.[0] || 'ROLE_USER'}</div>
+              <div className="user-roles">
+                {userInfo.roles && userInfo.roles.length > 0
+                  ? userInfo.roles
+                      .map(r => r.replace(/^ROLE_/, ''))  // убираем префикс, если нужно
+                      .join(', ')
+                  : '—'}
+              </div>
             </div>
           </div>
-          {/* Вставим кнопку VIP-проверки */}
-          {userInfo?.username && (
-            <VipRequestButton username={userInfo.username} setIsVip={setIsVip}/>
-          )}
           <button className="logout-button" onClick={onLogout}>
             Выйти
           </button>

@@ -42,11 +42,12 @@ export default function LoginForm({
       }
       const user = await meResp.json();
 
-      // 3) Обновляем состояние в App
+      // 3) Обновляем состояние в App: сохраняем username, roles и isVip
       setAuthenticated(true);
       setUserInfo({
         username: user.username,
-        roles: user.roles.map(r => r.authority || r)
+        roles: user.roles || [],
+        isVip: user.isVip || false
       });
 
       // 4) Переходим на защищённую страницу
@@ -83,6 +84,14 @@ export default function LoginForm({
 
       <button type="submit" className="login-button">
         Войти
+      </button>
+
+      <button
+        type="button"
+        onClick={() => navigate('/register')}
+        className="login-button"
+      >
+        Зарегистрироваться
       </button>
 
       <button

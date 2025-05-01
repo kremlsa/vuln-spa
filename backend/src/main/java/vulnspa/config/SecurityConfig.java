@@ -79,24 +79,16 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         // открываем весь /api/auth/* для вашего REST-контроллера
                         .requestMatchers("/api/auth/**").permitAll()
-
-                        // статика и фронтовые роуты
-                        .requestMatchers("/", "/index.html", "/static/**",
-                                "/favicon.ico", "/logo.png", "/login")
-                        .permitAll()
-
                         // H2-консоль
                         .requestMatchers("/h2-console/**").permitAll()
-
                         // заметки
-                        .requestMatchers(HttpMethod.GET,    "/api/notes/**").permitAll()
                         .requestMatchers(HttpMethod.POST,   "/api/notes/**")
                         .hasAnyRole("USER","ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/api/notes/**")
                         .hasAnyRole("USER","ADMIN")
-
-                        // всё остальное — под защищённый доступ
-                        .anyRequest().authenticated()
+                        .requestMatchers("/api/vip/**").authenticated()
+                        // всё остальное — открыто
+                        .anyRequest().permitAll()
                 )
                 // (optional) HTTP Basic для curl/Postman
                 .httpBasic(Customizer.withDefaults())

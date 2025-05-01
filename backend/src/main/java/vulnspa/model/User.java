@@ -1,22 +1,22 @@
 package vulnspa.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 
 @Entity
 @Table(name = "users")
 public class User {
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)  // <-- вот оно
+    @Column(name = "id")
     private Long id;
     private String username;
     private String password;
-    private boolean isVip = false;
+    private boolean isVip;
+    private boolean enabled = true;
 
     // Геттеры и сеттеры нужны для JSON сериализации
+
 
     public boolean isVip() {
         return isVip;
@@ -41,5 +41,13 @@ public class User {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public boolean isEnabled() {
+        return enabled;
+    }
+
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
     }
 }

@@ -8,6 +8,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
@@ -19,6 +20,7 @@ import vulnspa.repository.UserRepository;
 import vulnspa.service.UserService;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -80,25 +82,24 @@ public class AuthController {
     @GetMapping("/me")
     public ResponseEntity<?> me() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        // make sure it's not anonymous
-        System.out.println(auth.isAuthenticated());
-        System.out.println(auth.getName());
-        if (auth == null
-                || !auth.isAuthenticated()
-                || auth.getPrincipal().equals("anonymousUser")) {
-            return ResponseEntity
-                    .status(HttpStatus.UNAUTHORIZED)
-                    .body(Map.of("error", "Not authenticated"));
+        if (auth == null || !auth.isAuthenticated() || "anonymousUser".equals(auth.getPrincipal())) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error","Not authenticated"));
         }
 
         String username = auth.getName();
         User user = userRepository.findByUsername(username)
-                .orElseThrow(); // or handle however you like
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
 
         Map<String,Object> body = new HashMap<>();
         body.put("username", user.getUsername());
-        body.put("roles", auth.getAuthorities());
         body.put("isVip", user.isVip());
+        // сюда добавляем роли
+        List<String> roles = auth.getAuthorities()
+                .stream()
+                .map(GrantedAuthority::getAuthority)
+                .toList();
+        body.put("roles", roles);
+
         return ResponseEntity.ok(body);
     }
 
