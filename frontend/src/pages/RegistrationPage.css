@@ -1,0 +1,15 @@
+.registration-wrapper {
+  background-color: #f4f4f4;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0rem;
+  font-family: 'Roboto Mono', monospace;
+  transition: background-color 0.3s;
+}
+
+/* Dark theme override */
+.registration-wrapper.dark {
+  background-color: #000;
+}

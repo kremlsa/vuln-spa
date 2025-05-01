@@ -6,8 +6,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 @Controller
 public class WebController {
 
-    @GetMapping(value = {"/{path:[^\\.]*}", "/"})
-    public String redirect() {
+    // Любые пути, кроме /api/**, возвращают index.html
+    @GetMapping({"/", "/login", "/register", "/notes", "/notes/**"})
+    public String forwardToIndex() {
         return "forward:/index.html";
     }
 }
