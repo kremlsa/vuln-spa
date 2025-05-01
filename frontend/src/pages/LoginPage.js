@@ -1,27 +1,25 @@
-// src/pages/LoginPage.js
 import React, { useState } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, Link } from 'react-router-dom';
 import LoginForm from '../components/LoginForm';
-import './LoginPage.css'; // обычные стили
+import './LoginPage.css';
 
-function LoginPage() {
+function LoginPage({ setAuthenticated, setUserInfo, currentTheme, toggleTheme }) {
   const location = useLocation();
   const sessionExpired = location.state?.sessionExpired;
 
-  const [theme, setTheme] = useState('light'); // состояние темы
-
-  const toggleTheme = () => {
-    setTheme((prev) => (prev === 'light' ? 'dark' : 'light'));
-  };
-
   return (
-    <div className={`login-wrapper ${theme}-theme`}>
+    <div className={`login-wrapper ${currentTheme}`}>
       {sessionExpired && (
         <div className="session-expired-message">
           Ваша сессия истекла. Пожалуйста, войдите снова.
         </div>
       )}
-      <LoginForm toggleTheme={toggleTheme} currentTheme={theme} />
+      <LoginForm
+        setAuthenticated={setAuthenticated}
+        setUserInfo={setUserInfo}
+        toggleTheme={toggleTheme}
+        currentTheme={currentTheme}
+      />
     </div>
   );
 }

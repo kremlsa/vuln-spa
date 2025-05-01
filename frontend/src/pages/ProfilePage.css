@@ -1,0 +1,30 @@
+.profile-page-wrapper {
+  min-height: 100vh;
+  padding: 2rem;
+  background-color: #f4f4f4;
+  font-family: 'Roboto Mono', monospace;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.back-link {
+  margin-top: 2rem;
+}
+
+.back-button {
+  background-color: #000;
+  color: #fff;
+  border: none;
+  padding: 0.8rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  text-transform: uppercase;
+  border-radius: 4px;
+  transition: background-color 0.3s;
+}
+
+.back-button:hover {
+  background-color: #333;
+}

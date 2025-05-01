@@ -4,8 +4,12 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.User;
@@ -13,55 +17,85 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.provisioning.JdbcUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
+import vulnspa.security.Md5PasswordEncoder;
 
 import javax.sql.DataSource;
 
+import org.springframework.security.web.authentication.HttpStatusEntryPoint;
+import org.springframework.security.config.Customizer;
+
 
 @Configuration
+@EnableWebSecurity
 public class SecurityConfig {
 
-    @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http
-                .authorizeHttpRequests(authz -> authz
-                        .requestMatchers("/", "/index.html", "/static/**", "/favicon.ico", "/logo.png", "/notes").permitAll()
-                        .requestMatchers("/h2-console/**").permitAll()
-                        .requestMatchers("/login").permitAll() // не забудь разрешить доступ к /login
-                        .requestMatchers(HttpMethod.GET, "/api/notes/**").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/notes/**").hasAnyRole("USER", "ADMIN")
-                        .requestMatchers(HttpMethod.DELETE, "/api/notes/**").hasAnyRole("USER", "ADMIN")
-                        .requestMatchers("/api/**").authenticated()
+    private final DataSource dataSource;
+    private final Md5PasswordEncoder passwordEncoder;
 
-                )
-                .formLogin()
-                .and()
-                .logout(logout -> logout
-                        .logoutUrl("/logout") // <-- стандартный путь
-                        .logoutSuccessHandler((request, response, authentication) -> {
-                            response.setStatus(HttpServletResponse.SC_OK); // <-- после выхода вернём 200 OK
-                        })
-                )
-                .sessionManagement(session -> session
-                        .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
-                )
-                .csrf().disable()
-                .exceptionHandling()
-                .authenticationEntryPoint((request, response, authException) -> {
-                    String path = request.getRequestURI();
-                    if (path.startsWith("/api/")) {
-                        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                        response.setContentType("application/json");
-                        response.getWriter().write("{\"error\": \"Unauthorized\"}");
-                    } else {
-                        response.sendRedirect("/login");
-                    }
-                });
-        return http.build();
+    public SecurityConfig(DataSource dataSource,
+                          Md5PasswordEncoder passwordEncoder) {
+        this.dataSource = dataSource;
+        this.passwordEncoder = passwordEncoder;
     }
 
-
+    // ===== 1) бин JdbcUserDetailsManager =====
     @Bean
-    public UserDetailsService userDetailsServiceImpl(DataSource dataSource) {
+    public JdbcUserDetailsManager jdbcUserDetailsManager() {
         return new JdbcUserDetailsManager(dataSource);
+    }
+
+    // ===== 2) бин DaoAuthenticationProvider =====
+    @Bean
+    public DaoAuthenticationProvider authenticationProvider(JdbcUserDetailsManager uds) {
+        DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
+        provider.setUserDetailsService(uds);
+        provider.setPasswordEncoder(passwordEncoder);
+        return provider;
+    }
+
+    // ===== 3) бин AuthenticationManager =====
+    @Bean
+    public AuthenticationManager authenticationManager(HttpSecurity http,
+                                                       DaoAuthenticationProvider authProvider)
+            throws Exception {
+        AuthenticationManagerBuilder auth =
+                http.getSharedObject(AuthenticationManagerBuilder.class);
+        auth.authenticationProvider(authProvider);
+        return auth.build();
+    }
+
+    // ===== 4) SecurityFilterChain без formLogin =====
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http,
+                                           DaoAuthenticationProvider authProvider) throws Exception {
+        http
+                .authenticationProvider(authProvider)
+                .csrf(csrf -> csrf.disable())
+                .sessionManagement(sm ->
+                        sm.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
+                .exceptionHandling(ex ->
+                        ex.authenticationEntryPoint(
+                                new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)))
+                .authorizeHttpRequests(auth -> auth
+                        // открываем весь /api/auth/* для вашего REST-контроллера
+                        .requestMatchers("/api/auth/**").permitAll()
+                        // H2-консоль
+                        .requestMatchers("/h2-console/**").permitAll()
+                        // заметки
+                        .requestMatchers(HttpMethod.POST,   "/api/notes/**")
+                        .hasAnyRole("USER","ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/notes/**")
+                        .hasAnyRole("USER","ADMIN")
+                        .requestMatchers("/api/vip/**").authenticated()
+                        .requestMatchers("/api/profile/**").authenticated()
+                        // всё остальное — открыто
+                        .anyRequest().permitAll()
+                )
+                // (optional) HTTP Basic для curl/Postman
+                .httpBasic(Customizer.withDefaults())
+                // чтобы H2-консоль работала в iframe
+                .headers(headers -> headers.frameOptions(frame -> frame.disable()));
+
+        return http.build();
     }
 }

@@ -1,132 +1,91 @@
 /* src/components/Header.css */
 
 .header {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   padding: 1rem 2rem;
+  border-bottom: 3px solid #000;
   font-family: 'Roboto Mono', monospace;
-  border-bottom: 4px solid;
-  transition: background-color 0.3s, color 0.3s;
-  background-color: #000;
+  background-color: #1c1c1c; /* тёмно-серебристый */
+  color: #fff;
 }
 
-.app.dark .header {
-  background-color: #000;
-  color: #000;
-  border-color: #000;
-}
-
-.app.light .header {
-  background-color: #000;
-  color: #000;
-  border-color: #000;
-}
-
-/* Обертка для содержимого хедера на всю ширину */
 .header-content {
   width: 100%;
   display: flex;
+  justify-content: space-between;
   align-items: center;
-  position: relative; /* Чтобы центрировать заголовок через absolute */
 }
 
-/* Левый блок — логотип */
-.header-left {
+.header-left, .header-center, .header-right {
   display: flex;
   align-items: center;
+  gap: 1rem;
 }
 
 .logo {
-    height: auto;
-    width: 80px;
-    margin-right: 10px;
-    background-color: #dddddd;
-    padding: 4px;
-    border-radius: 8px; /* Скруглим края красиво */
-}
-
-/* Центральный блок — заголовок сайта */
-.header-center {
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
+  height: 40px;
 }
 
 .site-title {
+  font-size: 1.5rem;
   font-weight: 900;
-  font-size: 1.8rem;
-  text-transform: uppercase;
-  white-space: nowrap;
-}
-
-/* Правый блок — юзер-инфо + выход */
-.header-right {
-  display: flex;
-  align-items: center;
-  margin-left: auto; /* <<< Прижать вправо */
-  gap: 1.5rem;
 }
 
 .user-info-block {
   display: flex;
   align-items: center;
-  gap: 0.8rem;
+  gap: 1rem;
 }
 
 .user-avatar {
-  color: #FFF;
-  font-size: 1.5rem;
-  border: 3px solid currentColor;
-  border-radius: 50%;
+  background-color: #000;
+  color: #fff;
+  font-weight: 900;
+  padding: 0.6rem;
   width: 40px;
   height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: bold;
+  border-radius: 50%;
+  font-size: 1.2rem;
+  text-align: center;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  text-decoration: none;
+  border: 2px solid #fff;
+  box-sizing: border-box;
 }
 
-/* Пульс-анимация для аватарки */
-.pulse {
-  animation: pulseAnimation 1.5s ease-out;
-}
-
-@keyframes pulseAnimation {
-  0% { transform: scale(0.7); opacity: 0; }
-  50% { transform: scale(1.05); opacity: 1; }
-  100% { transform: scale(1); opacity: 1; }
-}
-
-.user-info {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  text-align: right;
+.user-avatar:hover {
+  background-color: #333;
 }
 
 .user-name {
-  font-weight: bold;
-  font-size: 1rem;
+  font-weight: 700;
 }
 
-.user-role {
-  font-size: 0.9rem;
-  opacity: 0.7;
+.user-roles {
+  font-size: 0.85rem;
+  color: #ccc;
 }
 
-/* Кнопка выхода */
 .logout-button {
-  background-color: transparent;
-  color: inherit;
-  border: 3px solid currentColor;
-  padding: 0.5rem 1rem;
-  font-weight: bold;
+  margin-left: 1rem;
+  background-color: #000;
+  color: #fff;
+  padding: 0.6rem 1.2rem;
+  border: none;
+  font-weight: 700;
   cursor: pointer;
-  font-family: inherit;
   text-transform: uppercase;
-  transition: all 0.2s ease;
 }
 
 .logout-button:hover {
-  background-color: currentColor;
-  color: inherit;
-  filter: invert(100%);
+  background-color: #444;
 }

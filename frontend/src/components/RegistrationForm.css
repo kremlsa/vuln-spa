@@ -1,15 +1,6 @@
-/* src/components/LoginForm.css */
-.login-wrapper {
-  background-color: #f4f4f4;
-  min-height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-family: 'Roboto Mono', monospace;
-  padding: 2rem;
-}
 
-.login-form {
+
+.registration-form {
   background-color: #fff;
   padding: 2rem;
   border: 3px solid #000;
@@ -21,46 +12,50 @@
   transition: background-color 0.3s, color 0.3s;
 }
 
-.login-form.light {
+/* Light theme */
+.registration-form.light {
   background-color: #fff;
   border: 3px solid #000;
+  color: #000;
 }
 
-.login-form.dark {
+/* Dark theme */
+.registration-form.dark {
   background-color: #000;
   border: 3px solid #fff;
+  color: #fff;
 }
 
-.login-title {
+.registration-title {
   font-size: 2rem;
   font-weight: 900;
   text-align: center;
   margin-bottom: 1rem;
 }
 
-.login-form.light .login-title {
+.registration-form.light .registration-title {
   color: #000;
 }
 
-.login-form.dark .login-title {
+.registration-form.dark .registration-title {
   color: #fff;
 }
 
-.login-label {
+.registration-label {
   font-size: 1rem;
   font-weight: 700;
   text-transform: uppercase;
 }
 
-.login-form.light .login-label {
+.registration-form.light .registration-label {
   color: #000;
 }
 
-.login-form.dark .login-label {
+.registration-form.dark .registration-label {
   color: #fff;
 }
 
-.login-input {
+.registration-input {
   padding: 1rem;
   border: 3px solid;
   font-size: 1rem;
@@ -68,36 +63,13 @@
   background-color: #e4e4e4;
 }
 
-.login-form.dark .login-input {
+.registration-form.dark .registration-input {
   background-color: #333;
   color: #fff;
   border-color: #fff;
 }
 
-.login-password-container {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.show-password-button {
-  margin-top: 0.5rem;
-  background-color: #000;
-  color: #fff;
-  border: none;
-  padding: 0.8rem;
-  cursor: pointer;
-  font-weight: 700;
-  text-transform: uppercase;
-  font-family: inherit;
-}
-
-.login-form.dark .show-password-button {
-  background-color: #fff;
-  color: #000;
-}
-
-.login-button {
+.registration-button {
   margin-top: 1rem;
   background-color: #000;
   color: #fff;
@@ -110,20 +82,26 @@
   font-family: inherit;
 }
 
-.login-form.dark .login-button {
+.registration-form.dark .registration-button {
   background-color: #fff;
   color: #000;
 }
 
 
 
-.login-form.dark 
+.registration-form.dark 
 
-/* Эффект тряски */
+/* Ошибки и shake-анимация */
+.error {
+  color: red;
+  font-weight: 700;
+}
+
 @keyframes
   25% { transform: translateX(-10px); }
   50% { transform: translateX(10px); }
   75% { transform: translateX(-10px); }
   100% { transform: translateX(0); }
+
 
 

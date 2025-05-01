@@ -23,11 +23,7 @@
 }
 
 .dark-theme .login-button,
-.dark-theme .toggle-theme-button {
-  background-color: #fff;
-  color: #000;
-  border: 3px solid #fff;
-}
+.dark-theme 
 
 .dark-theme .login-button:hover,
 .dark-theme .toggle-theme-button:hover {
