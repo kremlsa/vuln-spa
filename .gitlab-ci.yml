@@ -36,6 +36,10 @@ ai_review:
   image: docker.io/kremlsa/review-bot:latest
   script:
     - echo "🤖 Запуск анализа AI"
+    - echo "📁 Проверим наличие MCP файлов"
+    - ls -la
+    - ls -la mcp || echo "❌ MCP директория не найдена"
+    - cat mcp/mcp.json || echo "❌ MCP JSON не найден"
     - /app/ai_review_bot
   dependencies:
     - prepare_mcp
