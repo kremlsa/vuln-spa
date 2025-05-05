@@ -39,7 +39,6 @@ ai_review:
     - ls -la mcp
     - ls -la .
     - ls -la /
-    
     # - /app/ai_review_bot --base-dir mcp
   dependencies:
     - prepare_mcp
