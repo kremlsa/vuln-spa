@@ -19,7 +19,7 @@ prepare_mcp:
     - |
       cat > mcp/mcp.json <<EOF
       {
-        "diff": "mcp/diff.patch"
+        "diff": "diff.patch"
       }
       EOF
   artifacts:
