@@ -3,7 +3,7 @@ stages:
   - review
 
 variables:
-  MCP_PATH: "mcp/mcp.json"
+  MCP_PATH: "$CI_PROJECT_DIR/mcp/mcp.json"
   OPENAI_MODEL: "gpt-4o"
   OPENAI_API_BASE_URL: "https://api.openai.com/v1"
   OPENAI_SYSTEM_ROLE: "Ты помощник по code review. Проанализируй изменения."
