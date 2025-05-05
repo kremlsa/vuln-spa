@@ -6,7 +6,7 @@ variables:
   OPENAI_API_BASE_URL: "https://api.openai.com/v1"
   OPENAI_MODEL: "gpt-4o"
   OPENAI_SYSTEM_ROLE: "Ты помощник по code review. Проанализируй diff и предложи улучшения."
-  MCP_CONFIG: "mcp/mcp.json"
+  MCP_PATH: "mcp/mcp.json"
 
 ai_review:
   stage: review
