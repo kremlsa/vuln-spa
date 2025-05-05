@@ -1,35 +1,49 @@
 stages:
+  - prepare
   - review
 
 variables:
-  OPENAI_API_KEY: "$OPENAI_API_KEY"
-  OPENAI_API_BASE_URL: "https://api.openai.com/v1"
-  OPENAI_MODEL: "gpt-4o"
-  OPENAI_SYSTEM_ROLE: "Ты помощник по code review. Проанализируй diff и предложи улучшения."
   MCP_PATH: "mcp/mcp.json"
+  OPENAI_MODEL: "gpt-4o"
+  OPENAI_API_BASE_URL: "https://api.openai.com/v1"
+  OPENAI_SYSTEM_ROLE: "Ты помощник по code review. Проанализируй изменения."
 
-ai_review:
-  stage: review
-  image: docker.io/kremlsa/review-bot:latest
+prepare_mcp:
+  stage: prepare
+  image: alpine:latest
   script:
-    - echo "📦 Генерируем diff..."
+    - apk add --no-cache git
+    - mkdir -p mcp
     - git fetch origin "$CI_MERGE_REQUEST_TARGET_BRANCH_NAME"
     - git diff origin/"$CI_MERGE_REQUEST_TARGET_BRANCH_NAME"...HEAD > mcp/diff.patch
-
-    - echo "📝 Генерируем mcp.json"
-    - mkdir -p mcp
     - |
       cat > mcp/mcp.json <<EOF
       {
         "diff": "mcp/diff.patch"
       }
       EOF
-
-    - echo "🤖 Запуск AI бота"
-    - /app/ai_review_bot
+  artifacts:
+    paths:
+      - mcp/
+    expire_in: 1 hour
   only:
     - merge_requests
+
+
+
+ai_review:
+  stage: review
+  image: docker.io/kremlsa/review-bot:latest
+  script:
+    - echo "🤖 Запуск анализа AI"
+    - /app/ai_review_bot
+  dependencies:
+    - prepare_mcp
   artifacts:
     paths:
       - mcp/ai_reply.md
     when: always
+  only:
+    - merge_requests
+
+
