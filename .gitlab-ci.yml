@@ -36,10 +36,7 @@ ai_review:
   image: docker.io/kremlsa/review-bot:latest
   script:
     - echo "🤖 Запуск анализа AI"
-    - ls -la mcp
-    - ls -la .
-    - ls -la /
-    # - /app/ai_review_bot --base-dir mcp
+    - /app/ai_review_bot --base-dir mcp
   dependencies:
     - prepare_mcp
   artifacts:
