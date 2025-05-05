@@ -10,7 +10,7 @@ variables:
 
 ai_review:
   stage: review
-  image: docker.io/kremlsa/ai-mr-bot:latest
+  image: docker.io/kremlsa/review-bot:latest
   script:
     - echo "📦 Генерируем diff..."
     - git fetch origin "$CI_MERGE_REQUEST_TARGET_BRANCH_NAME"
