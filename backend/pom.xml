@@ -61,6 +61,13 @@
             <artifactId>flyway-core</artifactId>
         </dependency>
 
+        <!-- FreeMarker шаблонизатор для генерации HTML, email, XML ... -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-freemarker</artifactId>
+        </dependency>
+
+
         <!-- Зависимости для тестирования  JUnit 5 + Mockito + Spring Test Context. -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
