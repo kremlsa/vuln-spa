@@ -72,12 +72,19 @@ public class AuthController {
         }
     }
 
-    @PostMapping("/logout")
-    public ResponseEntity<?> logout(HttpServletRequest request) {
-        request.getSession(false).invalidate();
-        SecurityContextHolder.clearContext();
-        return ResponseEntity.ok().build();
+    // ❌ Уязвимый logout — ничего не делает с сессией
+    @GetMapping("/logout")
+    public String insecureLogout() {
+        return "redirect:/login";
     }
+
+//    // ✅ Безопасный logout — инвалидирует сессию
+//    @PostMapping("/logout")
+//    public ResponseEntity<?> logout(HttpServletRequest request) {
+//        request.getSession(false).invalidate();
+//        SecurityContextHolder.clearContext();
+//        return ResponseEntity.ok().build();
+//    }
 
     @GetMapping("/me")
     public ResponseEntity<?> me() {

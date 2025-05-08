@@ -94,7 +94,9 @@ public class SecurityConfig {
                 // (optional) HTTP Basic для curl/Postman
                 .httpBasic(Customizer.withDefaults())
                 // чтобы H2-консоль работала в iframe
-                .headers(headers -> headers.frameOptions(frame -> frame.disable()));
+                .headers(headers -> headers.frameOptions(frame -> frame.disable()))
+                .logout(logout -> logout.disable()) // отключаем автоматический logout для демонстрации уязвимости
+        ;
 
         return http.build();
     }
