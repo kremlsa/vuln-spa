@@ -3,8 +3,10 @@ package vulnspa.controller;
 import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
@@ -71,8 +73,23 @@ public class NoteController {
 //${"freemarker.template.utility.Execute"?new()("id")}
 
     /* Broken Access Control Не проверяем автора заметки, можно создавать заметки от чужого имени */
+//    @PostMapping
+//    public Note createNote(@RequestBody Note note) {
+//        return noteRepository.save(note);
+//    }
     @PostMapping
-    public Note createNote(@RequestBody Note note) {
+    public Note createRawNote(@RequestBody String rawJson) {
+        // 💀 Уязвимая обработка JSON
+        JSONObject json = new JSONObject(rawJson);
+        System.out.println(json.toString());
+
+        // Попробуем извлечь "content" и "author"
+        String content = json.optString("content", "(пусто)");
+        String author = json.optString("author", "неизвестно");
+        Note note = new Note();
+        note.setAuthor(author);
+        note.setContent(content);
+        // Возвращаем только для демонстрации (ничего не сохраняем)
         return noteRepository.save(note);
     }
     /* Broken Access Control Не проверяем автора заметки, можно удалять любые заметки */
