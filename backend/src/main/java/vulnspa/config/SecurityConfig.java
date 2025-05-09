@@ -88,6 +88,7 @@ public class SecurityConfig {
                         .hasAnyRole("USER","ADMIN")
                         .requestMatchers("/api/vip/**").authenticated()
                         .requestMatchers("/api/profile/**").authenticated()
+                        .requestMatchers("/api/actuator/**").permitAll()
                         // всё остальное — открыто
                         .anyRequest().permitAll()
                 )

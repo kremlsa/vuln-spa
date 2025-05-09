@@ -67,6 +67,12 @@
             <artifactId>spring-boot-starter-freemarker</artifactId>
         </dependency>
 
+        <!-- SpringBoot actuator -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+
 
         <!-- Зависимости для тестирования  JUnit 5 + Mockito + Spring Test Context. -->
         <dependency>

@@ -1,7 +1,6 @@
-package vulnspa.config;
+package vulnspa.handler;
 
 import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.HttpStatus;
@@ -12,8 +11,6 @@ import org.springframework.web.servlet.NoHandlerFoundException;
 import vulnspa.model.ErrorResponse;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -34,6 +31,7 @@ public class GlobalExceptionHandler {
     public void handleNotFound(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
         String uri = request.getRequestURI();
 
+
         if (uri.startsWith("/api/")) {
             response.setStatus(HttpServletResponse.SC_NOT_FOUND);
             response.setContentType("application/json");
@@ -46,6 +44,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(Exception.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ErrorResponse handleGeneralError(HttpServletRequest request, Exception ex) {
+        System.out.println("🔥 EXCEPTION: " + ex.getClass().getName() + " - " + ex.getMessage());
         return new ErrorResponse("Internal Server Error", ex.getMessage(), request.getRequestURI());
     }
 }
