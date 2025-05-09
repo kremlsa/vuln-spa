@@ -88,6 +88,12 @@
             <scope>test</scope>
         </dependency>
 
+        <dependency>
+            <groupId>org.json</groupId>
+            <artifactId>json</artifactId>
+            <version>20230618</version> <!-- 💀 уязвимая -->
+        </dependency>
+
     </dependencies>
 
     <!-- Конфигурация сборки проекта -->
@@ -98,6 +104,9 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <mainClass>vulnspa.VulnspaApplication</mainClass>
+                </configuration>
             </plugin>
 
             <!-- Плагин для работы с фронтендом (npm + react-scripts build)
