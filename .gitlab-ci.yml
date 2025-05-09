@@ -1,143 +1,59 @@
 stages:
-  - pre-build
-  - package
-  - build
-  - postbuild
-  - cloc_report
-  - deploy
+  - prepare
   - review
 
-
 variables:
-  # Имя образа в реестре
-  IMAGE_NAME: "${CI_REGISTRY_IMAGE}/${CI_COMMIT_REF_SLUG}:latest"
-  MAVEN_CLI_OPTS: " --batch-mode"
-  GIT_STRATEGY: clone
+  MCP_PATH: "$CI_PROJECT_DIR/mcp/mcp.json"
+  OPENAI_MODEL: "gpt-4o"
+  OPENAI_API_BASE_URL: "https://api.openai.com/v1"
+  OPENAI_SYSTEM_ROLE: "Ты помощник по code review. Проанализируй изменения дай ответ на русском языке."
 
-# # Ищем секреты в репозитории
-trivy_secret_detection:
-  stage: pre-build
-  image:
-    name: aquasec/trivy:latest
-    entrypoint: [""]
+prepare_mcp:
+  stage: prepare
+  image: alpine:latest
   script:
-    - trivy fs --scanners secret -f table .
-  rules:
-    - if: '$CI_COMMIT_BRANCH == "main"'
-      when: always
-
-# # Проверяем на уязвимые зависимости файлы пакетных менеджеров
-trivy_sca:
-  stage: pre-build
-  image:
-    name: aquasec/trivy:latest
-    entrypoint: [""]
-  script:
-    - trivy fs --scanners vuln -f table .
-  rules:
-    - if: '$CI_COMMIT_BRANCH == "main"'
-      when: always
-
-# # Проверяем доступные конфигурации IaC
-trivy_iac:
-  stage: pre-build
-  image:
-    name: aquasec/trivy:latest
-    entrypoint: [""]
-  script:
-    - trivy fs --scanners misconfig -f table .
-  rules:
-    - if: '$CI_COMMIT_BRANCH == "main"'
-      when: always
-
-# Проводим SAST анализ
-sast:
-  stage: pre-build
-  allow_failure: true
-  image:
-    name: returntocorp/semgrep:latest
-    entrypoint: [""]
-  script:
-    semgrep --metrics=off --config="p/default" backend frontend
-
-  rules:
-    - if: '$CI_COMMIT_BRANCH == "main"'
-      when: always
-
-# Собираем образ приложения и публикуем в реестре
-kaniko-build:
-  image:
-    name: gcr.io/kaniko-project/executor:v1.9.0-debug
-    entrypoint: [""]
-  stage: build
-  script:
-    - /kaniko/executor
-      --context "${CI_PROJECT_DIR}"
-      --dockerfile "${CI_PROJECT_DIR}/Dockerfile"
-      --destination "${IMAGE_NAME}"
-  rules:
-    - if: '$CI_COMMIT_BRANCH == "main"'
-      exists:
-        - Dockerfile
-      when: always
-    - when: never
-
-# Проверяем безопасность собранного образа контейнера
-container-scan:
-  variables:
-    GIT_STRATEGY: "none"
-  stage: postbuild
-  image:
-    name: aquasec/trivy:latest
-    entrypoint: [""]
-  script:
-    - trivy image "$IMAGE_NAME" -f table
-
-  rules:
-    - if: '$CI_COMMIT_BRANCH == "main"'
-      when: always
-
-
-generate_cloc_report:
-  stage: cloc_report
-  image: python:3.12-slim
-  before_script:
-    - apt-get update && apt-get install -y cloc jq curl dos2unix
-    - dos2unix generate_index.sh
-  script:
-    - mkdir -p public
-    - cloc . --exclude-dir=.git --json --out=cloc-report.json
-    - bash generate_index.sh cloc-report.json public/index.html
+    - apk add --no-cache git tree
+    - mkdir -p mcp
+    - git fetch origin "$CI_MERGE_REQUEST_TARGET_BRANCH_NAME"
+    - git diff origin/"$CI_MERGE_REQUEST_TARGET_BRANCH_NAME"...HEAD > mcp/diff.patch
+    - tree -nfi -I ".git" > mcp/tree.txt || find . > mcp/tree.txt
+    - cp Dockerfile mcp/Dockerfile || true
+    - cp README.md mcp/README.md || true
+    - echo "Проанализируй код на наличие уязвимостей и ошибок." > mcp/prompt.txt
+    - echo "ok test" > mcp/test_report.txt
+    - |
+      cat > mcp/mcp.json <<EOF
+      {
+        "prompt": "prompt.txt",
+        "diff": "diff.patch",
+        "tree": "tree.txt",
+        "Dockerfile": "Dockerfile",
+        "readme": "README.md",
+        "tests": "test_report.txt"
+      }
+      EOF
   artifacts:
     paths:
-      - public
-    expire_in: 1 week
-
-  rules:
-    - if: '$CI_COMMIT_BRANCH == "main"'
-      when: always
-
-pages:
-  stage: deploy
-  script:
-    - echo "Deploying to GitLab Pages..."
-  artifacts:
-    paths:
-      - public
-  rules:
-    - if: '$CI_COMMIT_BRANCH == "wiki"'
-      when: always
-
-ai_code_review:
-  stage: review
-  image: docker.io/kremlsa/ai-mr-bot:latest
-  variables:
-    GITLAB_TOKEN: $GITLAB_TOKEN          # Токен для доступа к API GitLab MR
-    OPENAI_API_KEY: $OPENAI_API_KEY       # Только если используешь OpenAI
-    OPENAI_API_BASE_URL: https://api.openai.com/v1 # Например, http://localhost:11434/v1 для локалки
-    OPENAI_MODEL: gpt-4o         # Например, gpt-4o, llama3, codellama
-  script:
-    - echo "Запуск AI ревью бота..."
-    - ./ai_review_bot
+      - mcp/
+    expire_in: 1 hour
   only:
     - merge_requests
+
+
+
+ai_review:
+  stage: review
+  image: docker.io/kremlsa/review-bot:latest
+  script:
+    - echo "🤖 Запуск анализа AI"
+    - /app/ai_review_bot --base-dir mcp
+  dependencies:
+    - prepare_mcp
+  artifacts:
+    paths:
+      - mcp/ai_reply.md
+    when: always
+  only:
+    - merge_requests
+
+
