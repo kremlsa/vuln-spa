@@ -1,0 +1,38 @@
+.error-banner {
+    margin-top: 10px;
+    padding: 10px;
+    border-radius: 6px;
+    color: #fff;
+    background-color: #e74c3c; /* красный — обычная ошибка */
+    font-weight: bold;
+}
+
+.error-banner.waf-error {
+    background-color: #8e44ad;
+    border-left: 6px solid #c0392b;
+    box-shadow: 0 0 8px rgba(142, 68, 173, 0.6);
+    animation: pulse 1s infinite alternate;
+}
+
+.waf-hint {
+    margin-top: 5px;
+    font-size: 0.9em;
+    color: #fce4ec;
+}
+
+.chuck-norris-gif {
+    margin-top: 10px;
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(255, 0, 0, 0.4);
+}
+
+@keyframes pulse {
+    from {
+        transform: scale(1);
+    }
+    to {
+        transform: scale(1.02);
+    }
+}
