@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { fetchWithErrorHandling } from '../utils/fetchWithErrorHandling';
+import ErrorBanner from './ErrorBanner';
 
 function SearchNotes() {
     const [searchQuery, setSearchQuery] = useState('');
@@ -21,7 +22,9 @@ function SearchNotes() {
             if (data) setResults(data);
         } catch (err) {
             console.error('Ошибка поиска:', err);
-            setError(err.message || 'Ошибка поиска');
+            const msg = err.message || 'Ошибка поиска';
+            const isWaf = msg.toLowerCase().includes('waf') || msg.toLowerCase().includes('запрещено');
+            setError({ type: isWaf ? 'waf' : 'general', text: msg });
         }
     };
 
@@ -40,7 +43,7 @@ function SearchNotes() {
                 <button type="submit" className="search-button">Найти</button>
             </form>
 
-            {error && <div className="error-banner">⚠️ {error}</div>}
+            <ErrorBanner message={error} />
 
             {results.length > 0 && (
                 <ul className="search-results fade-in">
