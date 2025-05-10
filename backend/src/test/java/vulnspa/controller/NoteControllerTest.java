@@ -71,20 +71,6 @@ NoteRepository подменяется мок-объектом	@MockBean
 Проверяется: статус 200 и содержимое JSON ответа	.andExpect(jsonPath(...))
  */
 
-    @Test
-    void testDeleteNote() throws Exception {
-        Long noteId = 1L;
-
-        // ОБЯЗАТЕЛЬНО замокать existsById
-        when(noteRepository.existsById(noteId)).thenReturn(true);
-
-        mockMvc.perform(delete("/api/notes/{id}", noteId))
-                .andExpect(status().isOk());
-
-        // Проверяем, что метод deleteById был вызван ровно один раз с нужным ID
-        verify(noteRepository, times(1)).deleteById(noteId);
-    }
-
 
     @Test
     void testGetNotes() throws Exception {

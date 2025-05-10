@@ -1,10 +1,19 @@
-import React from 'react';
-import './ErrorBanner.css'; // Подключи стили отдельно
+import React, { useEffect } from 'react';
+import './ErrorBanner.css';
 
-function ErrorBanner({ message }) {
+function ErrorBanner({ message, onClear }) {
     if (!message || !message.text) return null;
 
     const isWaf = message.type === 'waf';
+
+      // Автоочистка через 5 секунд
+      useEffect(() => {
+        const timer = setTimeout(() => {
+          if (onClear) onClear();
+        }, 10000);
+
+        return () => clearTimeout(timer);
+      }, [message, onClear]);
 
     return (
         <div className={`error-banner ${isWaf ? 'waf-error' : ''}`}>
