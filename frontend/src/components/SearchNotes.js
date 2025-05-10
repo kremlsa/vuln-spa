@@ -43,7 +43,7 @@ function SearchNotes() {
                 <button type="submit" className="search-button">Найти</button>
             </form>
 
-            <ErrorBanner message={error} />
+            <ErrorBanner message={error} onClear={() => setError(null)} />
 
             {results.length > 0 && (
                 <ul className="search-results fade-in">

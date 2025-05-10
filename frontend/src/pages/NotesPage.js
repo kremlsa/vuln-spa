@@ -6,6 +6,7 @@ import Footer from '../components/Footer';
 import NoteForm from '../components/NoteForm';
 import NoteList from '../components/NoteList';
 import SearchNotes from '../components/SearchNotes';
+import ErrorBanner from '../components/ErrorBanner';
 import { fetchWithAuth } from '../utils/fetchWithAuth';
 import './NotesPage.css';
 
@@ -14,6 +15,7 @@ function NotesPage({ userInfo, currentTheme, toggleTheme }) {
   const [error, setError] = useState(null);
   const [loaded, setLoaded] = useState(false); // для fade-in анимации
   const navigate = useNavigate();
+  const isAdmin = userInfo.roles?.includes('ROLE_ADMIN') ?? false;
 
   // Инициализация isVip из userInfo
   const [isVip, setIsVip] = useState(userInfo.isVip);
@@ -63,22 +65,33 @@ function NotesPage({ userInfo, currentTheme, toggleTheme }) {
     }
   };
 
-  const handleDeleteNote = async (id) => {
-    if (!window.confirm('Удалить заметку?')) return;
-    try {
-      const response = await fetchWithAuth(
-        `/api/notes/${id}`,
-        { method: 'DELETE' },
-        navigate
-      );
-      if (response) {
-        fetchNotes();
-      }
-    } catch (err) {
-      setError('Ошибка удаления заметки');
-      console.error(err);
+const handleDeleteNote = async (id) => {
+  if (!window.confirm('Удалить заметку?')) return;
+  try {
+    const response = await fetchWithAuth(
+      `/api/notes/${id}`,
+      { method: 'DELETE' },
+      navigate
+    );
+
+    if (!response.ok) {
+      const data = await response.json();
+      const msg = data.error || 'Ошибка удаления заметки';
+      const isChuck = msg.toLowerCase().includes('чак') || msg.toLowerCase().includes('chuck');
+
+      setError({ type: isChuck ? 'waf' : 'general', text: msg });
+      return;
     }
-  };
+
+    fetchNotes();
+  } catch (err) {
+    const msg = err.message || 'Ошибка удаления заметки';
+    const isChuck = msg.toLowerCase().includes('чак') || msg.toLowerCase().includes('chuck');
+
+    setError({ type: isChuck ? 'waf' : 'general', text: msg });
+    console.error(err);
+  }
+};
 
   const handleLogout = async () => {
     try {
@@ -108,13 +121,18 @@ function NotesPage({ userInfo, currentTheme, toggleTheme }) {
           </button>
         </div>
 
-        {error && <div className="error-banner">⚠️ {error}</div>}
+        <ErrorBanner message={error} onClear={() => setError(null)} />
 
         {canCreate && (
           <NoteForm fetchNotes={fetchNotes} username={userInfo.username} />
         )}
 
-        <NoteList notes={notes} onDelete={canDelete ? handleDeleteNote : null} />
+        <NoteList
+          notes={notes}
+          onDelete={handleDeleteNote}
+          currentUsername={userInfo.username}
+          isAdmin={isAdmin}
+        />
 
         <SearchNotes />
       </main>

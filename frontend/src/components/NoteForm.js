@@ -45,7 +45,7 @@ function NoteForm({ fetchNotes, username }) {
             />
             <button type="submit" className="note-submit-button">Создать</button>
         </form>
-        <ErrorBanner message={errorMessage} />
+        <ErrorBanner message={errorMessage} onClear={() => setErrorMessage(null)} />
     </>
     );
 }

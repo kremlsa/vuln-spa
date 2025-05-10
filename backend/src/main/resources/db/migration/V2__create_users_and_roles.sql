@@ -21,7 +21,7 @@ CREATE UNIQUE INDEX IF NOT EXISTS ix_auth_username
 
 -- Данные для admin
 INSERT INTO users (username, password, is_vip, enabled)
-VALUES ('admin', '21232f297a57a5a743894a0e4a801fc3', TRUE, TRUE);
+VALUES ('admin', '5ebe2294ecd0e0f08eab7690d2a6ee69', TRUE, TRUE);
 
 INSERT INTO authorities (username, authority)
 VALUES ('admin', 'ROLE_ADMIN');
