@@ -8,7 +8,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 import vulnspa.model.Note;
@@ -17,10 +19,7 @@ import vulnspa.repository.NoteRepository;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 
 @RestController
@@ -89,17 +88,32 @@ public class NoteController {
         Note note = new Note();
         note.setAuthor(author);
         note.setContent(content);
-        // Возвращаем только для демонстрации (ничего не сохраняем)
         return noteRepository.save(note);
     }
+
     /* Broken Access Control Не проверяем автора заметки, можно удалять любые заметки */
     @DeleteMapping("/{id}")
-    public void deleteNote(@PathVariable Long id) {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        System.out.println("Удаляет пользователь: " + (auth != null ? auth.getName() : "Аноним"));
-        if (!noteRepository.existsById(id)) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Note not found");
+    public ResponseEntity<?> deleteNote(@PathVariable Long id, @AuthenticationPrincipal UserDetails user) {
+        Optional<Note> noteOpt = noteRepository.findById(id);
+        if (noteOpt.isEmpty()) {
+            return ResponseEntity.notFound().build();
         }
+
+        Note note = noteOpt.get();
+
+        // Пасхалка: Чака удалять нельзя
+        if ("Чак".equalsIgnoreCase(note.getAuthor())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Map.of("error", "Нельзя удалять заметки Чака Норриса. Это небезопасно. Он уже выехал."));
+        }
+
+        // Дополнительно: проверка авторства
+//        if (!note.getAuthor().equals(user.getUsername())) {
+//            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+//                    .body(Map.of("error", "Вы можете удалять только свои заметки."));
+//        }
+
         noteRepository.deleteById(id);
+        return ResponseEntity.ok().build();
     }
 }
