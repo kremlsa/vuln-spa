@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { fetchWithErrorHandling } from '../utils/fetchWithErrorHandling';
+import ErrorBanner from './ErrorBanner';
 
 function NoteForm({ fetchNotes, username }) {
     const [newNote, setNewNote] = useState('');
-    const [errorMessage, setErrorMessage] = useState('');
+    const [errorMessage, setErrorMessage] = useState(null);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -21,15 +22,18 @@ function NoteForm({ fetchNotes, username }) {
             });
 
             setNewNote('');
-            setErrorMessage(''); // Очистить ошибку после успеха
+            setErrorMessage(null); // Очистить ошибку после успеха
             fetchNotes(); // Обновить список заметок
         } catch (error) {
-            console.error('Ошибка при создании заметки:', error);
-            setErrorMessage(error.message || 'Ошибка отправки запроса');
+            const msg = error.message || 'Ошибка отправки запроса';
+            const isWaf = msg.toLowerCase().includes('waf') || msg.toLowerCase().includes('запрещено');
+
+            setErrorMessage({ type: isWaf ? 'waf' : 'general', text: msg });
         }
     };
 
     return (
+    <>
         <form onSubmit={handleSubmit} className="note-form">
             <h2>Создать новую заметку</h2>
             <input
@@ -40,9 +44,9 @@ function NoteForm({ fetchNotes, username }) {
                 className="input"
             />
             <button type="submit" className="note-submit-button">Создать</button>
-        {errorMessage && <div className="error-banner">⚠️ {errorMessage}</div>}
         </form>
-
+        <ErrorBanner message={errorMessage} />
+    </>
     );
 }
 
