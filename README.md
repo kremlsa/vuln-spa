@@ -79,8 +79,9 @@ vulnerable-spa/
 git clone https://gitlab.com/alexander.kremlev/vulnerable-spa.git
 cd vulnerable-spa
 docker build -t vulnerable-spa .
-docker run -e WAF_ENABLED=true --rm -p 8080:8080 vulnerable-spa
+docker run -e WAF_LEVEL=ADVANCED --rm -p 8080:8080 vulnerable-spa
 ```
+WAF_LEVEL = NONE, BASIC, ADVANCED
 
 Приложение доступно по адресу:
 - http://localhost:8080/

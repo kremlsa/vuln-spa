@@ -7,31 +7,36 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
-import java.util.regex.Pattern;
 
 @Component
 public class WafFilter implements Filter {
 
-    @Value("${waf.enabled:true}")
-    private boolean wafEnabled;
+    @Value("${waf.level:BASIC}")
+    private String wafLevelStr;
 
-    private final Pattern sqlInjectionPattern = Pattern.compile(
-            "('|--|;|/\\*|\\*/|\\b(SELECT|UNION|INSERT|UPDATE|DELETE|DROP|OR|AND)\\b)",
-            Pattern.CASE_INSENSITIVE
-    );
+    private WafStrategy strategy;
 
-    private final Pattern xssPattern = Pattern.compile(
-            "(?i)(<script.*?>|</script>|onerror\\s*=|onload\\s*=|javascript:|alert\\()"
-    );
+    @Override
+    public void init(FilterConfig filterConfig) {
+        WafLevel level;
+        try {
+            level = WafLevel.valueOf(wafLevelStr.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            level = WafLevel.BASIC;
+        }
+
+        switch (level) {
+            case NONE -> strategy = new NoneWafStrategy();
+            case BASIC -> strategy = new BasicWafStrategy();
+            case ADVANCED -> strategy = new AdvancedWafStrategy();
+        }
+
+        System.out.println("[WAF] Initialized with level: " + level);
+    }
 
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
             throws IOException, ServletException {
-
-        if (!wafEnabled) {
-            chain.doFilter(request, response);
-            return;
-        }
 
         if (!(request instanceof HttpServletRequest)) {
             chain.doFilter(request, response);
@@ -43,20 +48,17 @@ public class WafFilter implements Filter {
 
         String uri = httpReq.getRequestURI();
 
-        // Пропустить страницу блокировки
         if (uri != null && uri.startsWith("/static/waf_blocked.html")) {
             chain.doFilter(request, response);
             return;
         }
 
-        // Оборачиваем запрос чтобы можно было читать тело
         CachedBodyHttpServletRequest cachedRequest = new CachedBodyHttpServletRequest(httpReq);
+
         System.out.println("[WAF] Incoming request method: " + httpReq.getMethod());
         System.out.println("[WAF] Incoming request URI: " + httpReq.getRequestURI());
-        System.out.println("[WAF] Incoming request content-type: " + httpReq.getContentType());
-        System.out.println("[WAF] Incoming request content-length: " + httpReq.getContentLength());
 
-        if (isMalicious(cachedRequest)) {
+        if (strategy.isMalicious(cachedRequest)) {
             System.out.println("[WAF] Заблокирован подозрительный запрос: " + uri);
 
             if (uri.startsWith("/api/")) {
@@ -72,26 +74,11 @@ public class WafFilter implements Filter {
             return;
         }
 
-        // Всё чисто ➔ пропускаем дальше
         chain.doFilter(cachedRequest, response);
     }
 
-    private boolean isMalicious(CachedBodyHttpServletRequest request) throws IOException {
-        String uri = request.getRequestURI();
-        String query = request.getQueryString();
-        String body = "";
-
-        if ("POST".equalsIgnoreCase(request.getMethod()) && request.getContentType() != null && request.getContentType().contains("application/json")) {
-            body = request.getCachedBodyAsString();
-        }
-
-        System.out.println("[WAF] Проверка запроса:");
-        System.out.println("URI: " + uri);
-        System.out.println("QUERY: " + query);
-        System.out.println("BODY: " + body);
-
-        return (query != null && (sqlInjectionPattern.matcher(query).find() || xssPattern.matcher(query).find())) ||
-                (uri != null && (sqlInjectionPattern.matcher(uri).find() || xssPattern.matcher(uri).find())) ||
-                (!body.isEmpty() && (sqlInjectionPattern.matcher(body).find() || xssPattern.matcher(body).find()));
+    @Override
+    public void destroy() {
+        // no-op
     }
 }
