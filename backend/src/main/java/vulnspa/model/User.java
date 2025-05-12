@@ -22,7 +22,7 @@ public class User {
         return isVip;
     }
 
-    public void setVip(boolean vip) {
+    public void setIsVip(boolean vip) {
         isVip = vip;
     }
 
