@@ -1,143 +1,82 @@
 stages:
-  - pre-build
-  - package
   - build
-  - postbuild
-  - cloc_report
-  - deploy
-  - review
+  - sbom-trivy
+  - sbom-cdxgen
+  - sbom-syft
 
-
-variables:
-  # Имя образа в реестре
-  IMAGE_NAME: "${CI_REGISTRY_IMAGE}/${CI_COMMIT_REF_SLUG}:latest"
-  MAVEN_CLI_OPTS: " --batch-mode"
-  GIT_STRATEGY: clone
-
-# # Ищем секреты в репозитории
-trivy_secret_detection:
-  stage: pre-build
+trivy_sbom_full:
+  stage: sbom-trivy
   image:
-    name: aquasec/trivy:latest
+    # Для работы со старой версией циклона напрямую версию формата в триви указать нельзя
+    name: aquasec/trivy:0.40.0
     entrypoint: [""]
-  script:
-    - trivy fs --scanners secret -f table .
-  rules:
-    - if: '$CI_COMMIT_BRANCH == "main"'
-      when: always
-
-# # Проверяем на уязвимые зависимости файлы пакетных менеджеров
-trivy_sca:
-  stage: pre-build
-  image:
-    name: aquasec/trivy:latest
-    entrypoint: [""]
-  script:
-    - trivy fs --scanners vuln -f table .
-  rules:
-    - if: '$CI_COMMIT_BRANCH == "main"'
-      when: always
-
-# # Проверяем доступные конфигурации IaC
-trivy_iac:
-  stage: pre-build
-  image:
-    name: aquasec/trivy:latest
-    entrypoint: [""]
-  script:
-    - trivy fs --scanners misconfig -f table .
-  rules:
-    - if: '$CI_COMMIT_BRANCH == "main"'
-      when: always
-
-# Проводим SAST анализ
-sast:
-  stage: pre-build
-  allow_failure: true
-  image:
-    name: returntocorp/semgrep:latest
-    entrypoint: [""]
-  script:
-    semgrep --metrics=off --config="p/default" backend frontend
-
-  rules:
-    - if: '$CI_COMMIT_BRANCH == "main"'
-      when: always
-
-# Собираем образ приложения и публикуем в реестре
-kaniko-build:
-  image:
-    name: gcr.io/kaniko-project/executor:v1.9.0-debug
-    entrypoint: [""]
-  stage: build
-  script:
-    - /kaniko/executor
-      --context "${CI_PROJECT_DIR}"
-      --dockerfile "${CI_PROJECT_DIR}/Dockerfile"
-      --destination "${IMAGE_NAME}"
-  rules:
-    - if: '$CI_COMMIT_BRANCH == "main"'
-      exists:
-        - Dockerfile
-      when: always
-    - when: never
-
-# Проверяем безопасность собранного образа контейнера
-container-scan:
-  variables:
-    GIT_STRATEGY: "none"
-  stage: postbuild
-  image:
-    name: aquasec/trivy:latest
-    entrypoint: [""]
-  script:
-    - trivy image "$IMAGE_NAME" -f table
-
-  rules:
-    - if: '$CI_COMMIT_BRANCH == "main"'
-      when: always
-
-
-generate_cloc_report:
-  stage: cloc_report
-  image: python:3.12-slim
   before_script:
-    - apt-get update && apt-get install -y cloc jq curl dos2unix
-    - dos2unix generate_index.sh
+    - apk add --no-cache jq
   script:
-    - mkdir -p public
-    - cloc . --exclude-dir=.git --json --out=cloc-report.json
-    - bash generate_index.sh cloc-report.json public/index.html
+    - trivy fs --format cyclonedx --output sbomfs.json .
+    - trivy rootfs --format cyclonedx --output sbomrootfs.json .
+    - |
+      jq -s '
+        .[0] * {
+          components: ((.[0].components // []) + (.[1].components // [])),
+          vulnerabilities: ((.[0].vulnerabilities // []) + (.[1].vulnerabilities // []))
+        }
+      ' sbomfs.json sbomrootfs.json > full_sbom.json
+  after_script:
+    - jq --color-output . sbomfs.json | less -R
+    - jq --color-output . sbomrootfs.json | less -R
+    - jq --color-output . full_sbom.json | less -R
   artifacts:
+    name: "full_sbom"
     paths:
-      - public
+      - full_sbom.json
     expire_in: 1 week
 
-  rules:
-    - if: '$CI_COMMIT_BRANCH == "main"'
-      when: always
 
-pages:
-  stage: deploy
-  script:
-    - echo "Deploying to GitLab Pages..."
-  artifacts:
-    paths:
-      - public
-  rules:
-    - if: '$CI_COMMIT_BRANCH == "wiki"'
-      when: always
 
-ai_code_review:
-  stage: review
-  image: docker.io/kremlsa/ai-mr-bot:latest
+# Собираем SBOM из пакетных менеджеров с помощью CycloneDX
+CycloneDX-sbom:
+  stage: sbom-cdxgen
+  allow_failure: true
   variables:
-    GITLAB_TOKEN: $GITLAB_TOKEN          # Токен для доступа к API GitLab MR
-    OPENAI_API_KEY: $OPENAI_API_KEY       # Только если используешь OpenAI
-    OPENAI_API_BASE_URL: https://api.openai.com/v1 # Например, http://localhost:11434/v1 для локалки
-    OPENAI_MODEL: gpt-4o         # Например, gpt-4o, llama3, codellama
+    GIT_STRATEGY: clone
+    # Задаём версию формата отчёта, например для последующего анализа инструмент поддерживают 1.4
+    CDX_SPEC_VERSION: 1.4
+    REPORT_NAME: "${CI_PROJECT_NAME}_CDXV_${CDX_SPEC_VERSION}.json"
+  image:
+    name: ghcr.io/cyclonedx/cdxgen:latest
+    entrypoint: [""]
   script:
-    - echo "Запуск AI ревью бота..."
-    - ./ai_review_bot
-  only:
-    - merge_requests
+    - |
+      node /opt/cdxgen/bin/cdxgen.js \
+      -t java \
+      --spec-version "${CDX_SPEC_VERSION}" \
+      -r . \
+      -o "${REPORT_NAME}"
+  artifacts:
+    when: always
+    paths:
+      - "${REPORT_NAME}"
+  # Форматированный вывод с помощью jq 
+  after_script:
+    - microdnf -y install jq
+    - jq --color-output . ${REPORT_NAME} | less -R
+
+syft-sbom:
+  variables:
+    GIT_STRATEGY: clone
+    REPORT_NAME: "${CI_PROJECT_NAME}_sbom.json"
+  stage: sbom-syft
+  allow_failure: true
+  image:
+    name: docker.io/anchore/syft:debug
+    entrypoint: [""]
+  script: 
+    - /syft dir:. -o cyclonedx-json="${REPORT_NAME}"
+  after_script:
+    - apk add --no-cache jq
+    - jq --color-output . ${REPORT_NAME} | less -R
+  artifacts:
+    when: always
+    paths:
+      - "${REPORT_NAME}"
