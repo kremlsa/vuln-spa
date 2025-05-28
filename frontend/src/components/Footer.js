@@ -7,7 +7,6 @@ function Footer() {
   return (
     <footer className="footer">
       <div className="footer-content">
-//        © 2025 Vulnerable Application. https://gitlab.com/alexander.kremlev/vulnerable-spa.
           © 2025 Vulnerable Application. Alexander Kremlev.
       </div>
       <FooterDownload />
