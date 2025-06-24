@@ -8,7 +8,8 @@ import java.util.regex.Pattern;
 public class BasicWafStrategy implements WafStrategy {
     private final Pattern sql = Pattern.compile( "\\bOR\\s*1\\s*=\\s*1\\b", Pattern.CASE_INSENSITIVE);
     private final Pattern xss = Pattern.compile("<script>", Pattern.CASE_INSENSITIVE);
-    private final Pattern path = Pattern.compile("\\.\\./", Pattern.CASE_INSENSITIVE);
+    private final Pattern path = Pattern.compile("(?<!%|\\\\)\\.\\./", Pattern.CASE_INSENSITIVE);
+
 
     @Override
     public boolean isMalicious(CachedBodyHttpServletRequest req) throws IOException {
@@ -27,7 +28,7 @@ public class BasicWafStrategy implements WafStrategy {
             body = req.getCachedBodyAsString();
         }
 
-        return (p.matcher(decodedQuery).find()) ||
+        return (query != null && p.matcher(query).find()) ||
                 (uri != null && p.matcher(uri).find()) ||
                 (!body.isEmpty() && p.matcher(body).find());
     }
