@@ -4,7 +4,7 @@ stages:
 
 variables:
   MCP_PATH: "$CI_PROJECT_DIR/mcp/mcp.json"
-  OPENAI_MODEL: "gpt-4o"
+  OPENAI_MODEL: "gpt-5"
   OPENAI_API_BASE_URL: "https://api.openai.com/v1"
   OPENAI_SYSTEM_ROLE: "Ты помощник по code review. Проанализируй изменения дай ответ на русском языке."
 
