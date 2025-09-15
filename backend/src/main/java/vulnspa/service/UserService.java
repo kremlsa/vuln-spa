@@ -1,4 +1,5 @@
-package vulnspa.service;// src/main/java/.../service/UserService.java
+package vulnspa.service;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.core.Authentication;
@@ -12,20 +13,35 @@ import vulnspa.security.Md5PasswordEncoder;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Сервис работы с пользователями.
+ */
 @Service
 public class UserService {
     private final UserRepository userRepo;
     private Md5PasswordEncoder passwordEncoder;
     private JdbcTemplate jdbc;
 
+    /**
+     * Создает сервис с зависимостями.
+     *
+     * @param userRepo репозиторий пользователей.
+     * @param passwordEncoder MD5-кодировщик.
+     * @param jdbc шаблон JDBC для работы с таблицами ролей.
+     */
     public UserService(UserRepository userRepo,
                        Md5PasswordEncoder passwordEncoder,
                        JdbcTemplate jdbc) {
         this.userRepo = userRepo;
         this.passwordEncoder = passwordEncoder;
-        this.jdbc        = jdbc;
+        this.jdbc = jdbc;
     }
 
+    /**
+     * Регистрирует нового пользователя и добавляет ему роль {@code ROLE_USER}.
+     *
+     * @param user данные нового пользователя.
+     */
     public void register(User user) {
         if (userRepo.findByUsername(user.getUsername()).isPresent()) {
             throw new ResponseStatusException(
@@ -42,6 +58,11 @@ public class UserService {
         );
     }
 
+    /**
+     * Возвращает данные о текущем авторизованном пользователе.
+     *
+     * @return карта с логином, ролями и VIP-статусом.
+     */
     public Map<String, Object> getCurrentUser() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth == null

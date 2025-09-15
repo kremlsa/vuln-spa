@@ -1,6 +1,5 @@
 package vulnspa.config;
 
-import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -10,11 +9,7 @@ import org.springframework.security.authentication.dao.DaoAuthenticationProvider
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.provisioning.JdbcUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 import vulnspa.security.Md5PasswordEncoder;
@@ -25,6 +20,9 @@ import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.security.config.Customizer;
 
 
+/**
+ * Конфигурация Spring Security для демо-приложения.
+ */
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
@@ -32,19 +30,34 @@ public class SecurityConfig {
     private final DataSource dataSource;
     private final Md5PasswordEncoder passwordEncoder;
 
+    /**
+     * Создает конфигурацию безопасности.
+     *
+     * @param dataSource источник данных с таблицами пользователей.
+     * @param passwordEncoder используемый кодировщик паролей.
+     */
     public SecurityConfig(DataSource dataSource,
                           Md5PasswordEncoder passwordEncoder) {
         this.dataSource = dataSource;
         this.passwordEncoder = passwordEncoder;
     }
 
-    // ===== 1) бин JdbcUserDetailsManager =====
+    /**
+     * Конфигурирует {@link JdbcUserDetailsManager} для работы с таблицами Spring Security.
+     *
+     * @return настроенный менеджер пользователей.
+     */
     @Bean
     public JdbcUserDetailsManager jdbcUserDetailsManager() {
         return new JdbcUserDetailsManager(dataSource);
     }
 
-    // ===== 2) бин DaoAuthenticationProvider =====
+    /**
+     * Создает {@link DaoAuthenticationProvider} с MD5-кодировщиком.
+     *
+     * @param uds менеджер пользователей.
+     * @return настроенный провайдер аутентификации.
+     */
     @Bean
     public DaoAuthenticationProvider authenticationProvider(JdbcUserDetailsManager uds) {
         DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
@@ -53,7 +66,14 @@ public class SecurityConfig {
         return provider;
     }
 
-    // ===== 3) бин AuthenticationManager =====
+    /**
+     * Сборка {@link AuthenticationManager} с кастомным провайдером.
+     *
+     * @param http текущая {@link HttpSecurity}.
+     * @param authProvider провайдер аутентификации.
+     * @return менеджер аутентификации.
+     * @throws Exception при ошибке конфигурации.
+     */
     @Bean
     public AuthenticationManager authenticationManager(HttpSecurity http,
                                                        DaoAuthenticationProvider authProvider)
@@ -64,7 +84,14 @@ public class SecurityConfig {
         return auth.build();
     }
 
-    // ===== 4) SecurityFilterChain без formLogin =====
+    /**
+     * Основная цепочка фильтров безопасности для REST API.
+     *
+     * @param http объект конфигурации безопасности.
+     * @param authProvider провайдер аутентификации.
+     * @return настроенная цепочка фильтров.
+     * @throws Exception при ошибке конфигурации.
+     */
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http,
                                            DaoAuthenticationProvider authProvider) throws Exception {

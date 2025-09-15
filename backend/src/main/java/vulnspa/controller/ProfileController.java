@@ -14,6 +14,9 @@ import vulnspa.security.Md5PasswordEncoder;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * REST-контроллер для работы с профилем текущего пользователя.
+ */
 @RestController
 @RequestMapping("/api/profile")
 public class ProfileController {
@@ -21,11 +24,22 @@ public class ProfileController {
     private final UserRepository userRepo;
     private final Md5PasswordEncoder passwordEncoder;
 
+    /**
+     * Создает контроллер для работы с профилями.
+     *
+     * @param userRepo репозиторий пользователей.
+     * @param passwordEncoder небезопасный демонстрационный кодировщик паролей.
+     */
     public ProfileController(UserRepository userRepo, Md5PasswordEncoder passwordEncoder) {
         this.userRepo = userRepo;
         this.passwordEncoder = passwordEncoder;
     }
 
+    /**
+     * Возвращает основные данные о текущем пользователе.
+     *
+     * @return карта с логином, статусом и VIP-флагом пользователя.
+     */
     @GetMapping
     public Map<String, Object> getProfile() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -44,6 +58,12 @@ public class ProfileController {
         return result;
     }
 
+    /**
+     * Обновляет пароль текущего пользователя после проверки старого пароля.
+     *
+     * @param body карта со старым и новым паролем.
+     * @return код {@code 200 OK}, если пароль обновлён, либо описание ошибки.
+     */
     @PostMapping("/password")
     public ResponseEntity<?> updatePassword(@RequestBody Map<String, String> body) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();

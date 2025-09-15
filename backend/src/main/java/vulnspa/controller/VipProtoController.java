@@ -1,13 +1,11 @@
 package vulnspa.controller;
 
-import org.springframework.web.bind.annotation.*;
-import java.util.HashMap;
-import java.util.Map;
-
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 import vulnspa.model.User;
 import vulnspa.repository.UserRepository;
@@ -15,16 +13,29 @@ import vulnspa.repository.UserRepository;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * REST-контроллер для проверки VIP-статуса текущего пользователя.
+ */
 @RestController
 @RequestMapping("/api/vip")
 public class VipProtoController {
 
     private final UserRepository userRepo;
 
+    /**
+     * Создает контроллер с необходимым репозиторием пользователей.
+     *
+     * @param userRepo репозиторий пользователей.
+     */
     public VipProtoController(UserRepository userRepo) {
         this.userRepo = userRepo;
     }
 
+    /**
+     * Возвращает признак VIP для авторизованного пользователя.
+     *
+     * @return карта с именем пользователя и флагом {@code isVip}.
+     */
     @GetMapping("/status")
     public Map<String, Object> getVipStatus() {
         // 1. Достаём authentication из контекста

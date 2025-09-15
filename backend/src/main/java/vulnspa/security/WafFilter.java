@@ -8,6 +8,9 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 
+/**
+ * Servlet-фильтр, выполняющий проверку запросов на основе выбранной стратегии WAF.
+ */
 @Component
 public class WafFilter implements Filter {
 
@@ -16,6 +19,11 @@ public class WafFilter implements Filter {
 
     private WafStrategy strategy;
 
+    /**
+     * Инициализирует стратегию WAF на основании конфигурации.
+     *
+     * @param filterConfig конфигурация фильтра (не используется).
+     */
     @Override
     public void init(FilterConfig filterConfig) {
         WafLevel level;
@@ -34,6 +42,15 @@ public class WafFilter implements Filter {
         System.out.println("[WAF] Initialized with level: " + level);
     }
 
+    /**
+     * Проверяет запрос на наличие подозрительных паттернов.
+     *
+     * @param request входящий запрос.
+     * @param response исходящий ответ.
+     * @param chain цепочка фильтров.
+     * @throws IOException при ошибке ввода-вывода.
+     * @throws ServletException при ошибке сервлета.
+     */
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
             throws IOException, ServletException {
@@ -77,6 +94,10 @@ public class WafFilter implements Filter {
         chain.doFilter(cachedRequest, response);
     }
 
+    /**
+     * Освобождает ресурсы фильтра.
+     * Метод пустой, так как ресурсы не используются.
+     */
     @Override
     public void destroy() {
         // no-op

@@ -12,21 +12,44 @@ import vulnspa.model.ErrorResponse;
 
 import java.io.IOException;
 
+/**
+ * Глобальный обработчик исключений, формирующий человекопонятные ответы для клиентов.
+ */
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+    /**
+     * Преобразует исключение доступа в ответ 403.
+     *
+     * @param request текущий HTTP-запрос.
+     * @return описательный ответ об ошибке.
+     */
     @ExceptionHandler(org.springframework.security.access.AccessDeniedException.class)
     @ResponseStatus(HttpStatus.FORBIDDEN)
     public ErrorResponse handleAccessDeniedException(HttpServletRequest request) {
         return new ErrorResponse("Forbidden", "Access is denied", request.getRequestURI());
     }
 
+    /**
+     * Возвращает 401, если отсутствуют учетные данные.
+     *
+     * @param request текущий запрос.
+     * @return структура с сообщением об ошибке.
+     */
     @ExceptionHandler(org.springframework.security.authentication.AuthenticationCredentialsNotFoundException.class)
     @ResponseStatus(HttpStatus.UNAUTHORIZED)
     public ErrorResponse handleUnauthorizedException(HttpServletRequest request) {
         return new ErrorResponse("Unauthorized", "Authentication is required", request.getRequestURI());
     }
 
+    /**
+     * Обрабатывает ошибки 404 для API и SPA.
+     *
+     * @param request текущий запрос.
+     * @param response ответ, куда записывается результат.
+     * @throws IOException при ошибках записи.
+     * @throws ServletException при ошибке форварда.
+     */
     @ExceptionHandler(NoHandlerFoundException.class)
     public void handleNotFound(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
         String uri = request.getRequestURI();
@@ -41,6 +64,13 @@ public class GlobalExceptionHandler {
         }
     }
 
+    /**
+     * Логирует и возвращает ответ 500 для всех прочих исключений.
+     *
+     * @param request текущий запрос.
+     * @param ex возникшее исключение.
+     * @return ответ с кодом 500 и текстом ошибки.
+     */
     @ExceptionHandler(Exception.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ErrorResponse handleGeneralError(HttpServletRequest request, Exception ex) {

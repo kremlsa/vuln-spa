@@ -13,6 +13,9 @@ import org.springframework.test.web.servlet.MockMvc;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+/**
+ * Интеграционные тесты {@link vulnspa.controller.AuthController}.
+ */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
 @TestPropertySource(properties = {"waf.enabled=true"})
@@ -21,9 +24,15 @@ class AuthControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
+    /**
+     * Набор тестов для сценариев с авторизованным пользователем.
+     */
     @Nested
     class WhenAuthenticated {
 
+        /**
+         * Проверяет, что {@code /api/auth/me} возвращает данные пользователя.
+         */
         @Test
         @WithMockUser(username = "user", roles = {"USER"})
         void testGetCurrentUserAuthenticated() throws Exception {
@@ -34,9 +43,15 @@ class AuthControllerTest {
         }
     }
 
+    /**
+     * Набор тестов для анонимных запросов.
+     */
     @Nested
     class WhenNotAuthenticated {
 
+        /**
+         * Проверяет, что анонимный запрос получает 401.
+         */
         @Test
         void testGetCurrentUserNotAuthenticated() throws Exception {
             mockMvc.perform(get("/api/auth/me"))

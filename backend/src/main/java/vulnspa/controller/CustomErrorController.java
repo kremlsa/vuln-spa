@@ -9,9 +9,19 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Map;
 
+/**
+ * Собственный обработчик ошибок, который возвращает JSON вместо HTML.
+ * Используется для того, чтобы фронтенд получал структурированный ответ при ошибках.
+ */
 @RestController
-public class CustomErrorController  implements ErrorController {
+public class CustomErrorController implements ErrorController {
 
+    /**
+     * Формирует JSON-ответ с описанием возникшей ошибки.
+     *
+     * @param request запрос, содержащий атрибуты ошибки.
+     * @return карта с HTTP-статусом, текстом ошибки, сообщением и путем запроса.
+     */
     @RequestMapping("/error")
     public Map<String, Object> handleError(HttpServletRequest request) {
         Object statusCode = request.getAttribute(RequestDispatcher.ERROR_STATUS_CODE);
@@ -26,9 +36,9 @@ public class CustomErrorController  implements ErrorController {
 
         return Map.of(
                 "status", status,
-                "error", errorText,   // ← теперь будет "Not Found" для 404
+                "error", errorText,
                 "message", message != null ? message : "",
                 "path", uri
-                );
-        }
+        );
     }
+}

@@ -1,18 +1,23 @@
 package vulnspa.controller;
 
-import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 
-import java.net.MalformedURLException;
-import java.nio.file.*;
-
+/**
+ * Контроллер загрузки файлов из classpath.
+ */
 @RestController
 @RequestMapping("/api/files")
 public class FileController {
 
+    /**
+     * Возвращает файл из папки {@code static/files} внутри classpath.
+     *
+     * @param filename имя файла, который нужно скачать.
+     * @return HTTP-ответ с ресурсом или соответствующим кодом ошибки.
+     */
     @GetMapping
     public ResponseEntity<Resource> downloadFile(@RequestParam String filename) {
         try {

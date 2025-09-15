@@ -6,11 +6,16 @@ import vulnspa.model.User;
 
 import java.util.Optional;
 
+/**
+ * Репозиторий пользователей.
+ */
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
     /**
      * Находит пользователя по имени.
-     * Нужно для UserService.getCurrentUser().
+     *
+     * @param username логин пользователя.
+     * @return опционал с найденным пользователем.
      */
     Optional<User> findByUsername(String username);
 }
