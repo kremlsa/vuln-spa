@@ -7,12 +7,9 @@ import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 import vulnspa.model.Note;
 import vulnspa.repository.NoteRepository;
 
@@ -22,12 +19,22 @@ import java.io.StringWriter;
 import java.util.*;
 
 
+/**
+ * REST-контроллер, предоставляющий CRUD-операции с заметками.
+ * Многие реализации намеренно упрощены для демонстрации уязвимостей.
+ */
 @RestController
 @RequestMapping("/api/notes")
 public class NoteController {
     @Autowired
     private NoteRepository noteRepository;
 
+    /**
+     * Рендерит содержимое заметки с помощью шаблонизатора FreeMarker.
+     *
+     * @param note заметка, чьё содержимое требуется обработать.
+     * @return отрендеренное содержимое либо сообщение об ошибке.
+     */
     private String renderNoteContent(Note note) {
         try {
             Configuration cfg = new Configuration(Configuration.VERSION_2_3_32);
@@ -50,6 +57,11 @@ public class NoteController {
         }
     }
 
+    /**
+     * Возвращает список заметок с предрендеренным контентом.
+     *
+     * @return коллекция заметок, представленных в виде карт.
+     */
     @GetMapping
     public List<Map<String, Object>> getNotes() {
         List<Note> notes = noteRepository.findAll();
@@ -76,6 +88,12 @@ public class NoteController {
 //    public Note createNote(@RequestBody Note note) {
 //        return noteRepository.save(note);
 //    }
+    /**
+     * Создает заметку из произвольной JSON-строки без валидации полей.
+     *
+     * @param rawJson тело запроса в формате JSON.
+     * @return созданная сущность заметки.
+     */
     @PostMapping
     public Note createRawNote(@RequestBody String rawJson) {
         // 💀 Уязвимая обработка JSON
@@ -92,6 +110,13 @@ public class NoteController {
     }
 
     /* Broken Access Control Не проверяем автора заметки, можно удалять любые заметки */
+    /**
+     * Удаляет заметку по идентификатору.
+     *
+     * @param id идентификатор заметки.
+     * @param user текущий пользователь (может быть не использован).
+     * @return {@code 200 OK}, если заметка удалена, иначе описание ошибки.
+     */
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteNote(@PathVariable Long id, @AuthenticationPrincipal UserDetails user) {
         Optional<Note> noteOpt = noteRepository.findById(id);

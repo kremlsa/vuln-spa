@@ -6,8 +6,10 @@ import org.springframework.web.bind.annotation.*;
 import vulnspa.dto.NoteDTO;
 
 import java.util.List;
-import java.util.Map;
 
+/**
+ * Контроллер с преднамеренно уязвимыми реализациями для обучающих целей.
+ */
 @RestController
 @RequestMapping("/api")
 public class VulnerableController {
@@ -15,7 +17,12 @@ public class VulnerableController {
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
-    // Уязвимый метод поиска заметок
+    /**
+     * Выполняет поиск заметок по тексту без параметризации запроса.
+     *
+     * @param query часть содержимого заметки для поиска.
+     * @return список найденных заметок.
+     */
     @GetMapping("/search")
     public List<NoteDTO> searchNotes(@RequestParam String query) {
         // 🧨 ВНИМАНИЕ 🧨 — здесь создается SQL Injection

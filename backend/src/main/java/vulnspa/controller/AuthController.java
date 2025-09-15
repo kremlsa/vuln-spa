@@ -23,6 +23,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Контроллер аутентификации и регистрации пользователей.
+ */
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
@@ -32,6 +35,13 @@ public class AuthController {
 
     private final UserRepository userRepository;
 
+    /**
+     * Создает контроллер, объединяющий сервис пользователя и менеджер аутентификации.
+     *
+     * @param userService сервис работы с пользователями.
+     * @param authManager менеджер аутентификации Spring Security.
+     * @param userRepository репозиторий пользователей.
+     */
     public AuthController(UserService userService, AuthenticationManager authManager,
                           UserRepository userRepository) {
         this.userService = userService;
@@ -39,6 +49,14 @@ public class AuthController {
         this.userRepository = userRepository;
     }
 
+    /**
+     * Выполняет аутентификацию пользователя и сохраняет SecurityContext в сессии.
+     *
+     * @param loginRequest учетные данные пользователя.
+     * @param request текущий HTTP-запрос.
+     * @param response HTTP-ответ, в который сохраняется контекст.
+     * @return {@code 200 OK}, если вход выполнен успешно, иначе {@code 401 Unauthorized}.
+     */
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest,
                                    HttpServletRequest request,
@@ -72,7 +90,11 @@ public class AuthController {
         }
     }
 
-    // ❌ Уязвимый logout — ничего не делает с сессией
+    /**
+     * Демонстрация небезопасного выхода: сессия не инвалидируется.
+     *
+     * @return редирект на страницу входа.
+     */
     @GetMapping("/logout")
     public String insecureLogout() {
         return "redirect:/login";
@@ -86,6 +108,11 @@ public class AuthController {
 //        return ResponseEntity.ok().build();
 //    }
 
+    /**
+     * Возвращает информацию о текущем пользователе.
+     *
+     * @return объект со сводными данными профиля и списком ролей.
+     */
     @GetMapping("/me")
     public ResponseEntity<?> me() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -110,6 +137,12 @@ public class AuthController {
         return ResponseEntity.ok(body);
     }
 
+    /**
+     * Регистрирует нового пользователя и назначает базовую роль.
+     *
+     * @param user регистрируемый пользователь.
+     * @return сообщение об успешной регистрации.
+     */
     @PostMapping("/register")
     public ResponseEntity<String> register(@RequestBody User user) {
         userService.register(user);

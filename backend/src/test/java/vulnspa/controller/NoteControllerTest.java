@@ -22,6 +22,9 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+/**
+ * Тесты REST-контроллера заметок.
+ */
 @WebMvcTest(NoteController.class)
 @AutoConfigureMockMvc(addFilters = false) // Отключает Security фильтры
 class NoteControllerTest {
@@ -35,6 +38,9 @@ class NoteControllerTest {
     @Autowired
     private ObjectMapper objectMapper;
 
+    /**
+     * Проверяет, что POST-запрос сохраняет заметку и возвращает результат.
+     */
     @Test
     void testCreateNote() throws Exception {
         // Создаем Note, который вернет фейковый репозиторий
@@ -72,6 +78,9 @@ NoteRepository подменяется мок-объектом	@MockBean
  */
 
 
+    /**
+     * Проверяет, что список заметок возвращается корректно.
+     */
     @Test
     void testGetNotes() throws Exception {
         // Готовим список заметок

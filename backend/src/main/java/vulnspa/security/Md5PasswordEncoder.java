@@ -12,6 +12,12 @@ import java.security.MessageDigest;
 @Component
 public class Md5PasswordEncoder implements PasswordEncoder {
 
+    /**
+     * Вычисляет MD5-хеш от переданной строки.
+     *
+     * @param rawPassword исходный пароль.
+     * @return шестнадцатеричная строка MD5.
+     */
     @Override
     public String encode(CharSequence rawPassword) {
         try {
@@ -28,6 +34,13 @@ public class Md5PasswordEncoder implements PasswordEncoder {
         }
     }
 
+    /**
+     * Сравнивает исходный пароль с MD5-хешем.
+     *
+     * @param rawPassword исходный пароль.
+     * @param encodedPassword ранее сохраненный хеш.
+     * @return {@code true}, если хеши совпадают.
+     */
     @Override
     public boolean matches(CharSequence rawPassword, String encodedPassword) {
         return encode(rawPassword).equals(encodedPassword);
