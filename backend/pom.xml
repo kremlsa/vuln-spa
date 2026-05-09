@@ -68,6 +68,13 @@
         </dependency>
 
         <!-- SpringBoot actuator -->
+
+        <!-- Swagger UI + OpenAPI для Spring Boot 3 -->
+        <dependency>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+            <version>2.5.0</version>
+        </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-actuator</artifactId>
