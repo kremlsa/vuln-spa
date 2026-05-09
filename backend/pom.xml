@@ -73,6 +73,13 @@
             <artifactId>spring-boot-starter-actuator</artifactId>
         </dependency>
 
+        <!-- Swagger UI + OpenAPI для Spring Boot 3 -->
+        <dependency>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+            <version>2.5.0</version>
+        </dependency>
+
 
         <!-- Зависимости для тестирования  JUnit 5 + Mockito + Spring Test Context. -->
         <dependency>

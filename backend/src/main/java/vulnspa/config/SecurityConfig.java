@@ -116,6 +116,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/vip/**").authenticated()
                         .requestMatchers("/api/profile/**").authenticated()
                         .requestMatchers("/api/actuator/**").permitAll()
+                        .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                         // всё остальное — открыто
                         .anyRequest().permitAll()
                 )

@@ -1,0 +1,79 @@
+env:
+  vars:
+    # Переменная будет задаваться при запуске скрипта
+    TARGET_URL: ${TARGET_URL}
+
+  contexts:
+    - name: vulnerable-spa
+      urls:
+        - "${TARGET_URL}"
+      includePaths:
+        - "${TARGET_URL}.*"
+      excludePaths:
+        - "${TARGET_URL}/logout.*"
+
+      authentication:
+        method: json
+        parameters:
+          # Страница логина
+          loginPageUrl: "${TARGET_URL}/login"
+          # JSON-логин API
+          loginRequestUrl: "${TARGET_URL}/api/auth/login"
+          loginRequestBody: '{"username":"{%username%}","password":"{%password%}"}'
+
+      sessionManagement:
+        method: cookie
+
+      users:
+        - name: test-user
+          credentials:
+            username: "admin"
+            password: "secret"
+
+jobs:
+  - type: openapi
+    parameters:
+      apiFile: "/zap/wrk/openapi.json"
+      targetUrl: "${TARGET_URL}"
+      context: vulnerable-spa
+      user: test-user
+
+  - type: passiveScan-wait
+    parameters:
+      maxDuration: 10
+
+  - type: activeScan-policy
+    parameters:
+      name: aggressive-policy
+    policyDefinition:
+      # Более агрессивная политика для API
+      defaultStrength: High
+      defaultThreshold: Low
+
+  - type: activeScan
+    parameters:
+      context: vulnerable-spa
+      user: test-user
+      policy: aggressive-policy
+      maxScanDurationInMins: 30
+      maxRuleDurationInMins: 5
+      addQueryParam: true
+      delayInMs: 0
+      handleAntiCSRFTokens: true
+      injectPluginIdInHeader: true
+      scanHeadersAllRequests: true
+      threadPerHost: 5
+
+  - type: report
+    parameters:
+      template: traditional-html
+      reportDir: /zap/wrk
+      reportFile: zap-full-api-report.html
+      reportTitle: ZAP Authenticated API Scan Report
+
+  - type: report
+    parameters:
+      template: traditional-json
+      reportDir: /zap/wrk
+      reportFile: zap-full-api-report.json
+      reportTitle: ZAP Authenticated API Scan Report
