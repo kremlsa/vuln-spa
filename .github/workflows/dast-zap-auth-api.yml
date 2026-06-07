@@ -1,0 +1,93 @@
+name: DAST - OWASP ZAP Auth API
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  zap-auth-api:
+    runs-on: ubuntu-latest
+
+    env:
+      IMAGE_REF: vuln-spa:benchmark-${{ github.sha }}
+      APP_CONTAINER: vuln-spa-dast-auth-api
+      APP_URL: http://localhost:8080
+      OPENAPI_URL: http://localhost:8080/v3/api-docs
+      REPORT_DIR: reports/dast/zap-auth-api
+      ZAP_CONFIG: scan/dast/zap-full-auth-api.yaml
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Prepare report directory
+        run: |
+          mkdir -p "$REPORT_DIR"
+
+      - name: Build application image
+        run: |
+          docker build \
+            -t "$IMAGE_REF" \
+            .
+
+      - name: Run application container
+        run: |
+          docker run -d \
+            --name "$APP_CONTAINER" \
+            -p 8080:8080 \
+            "$IMAGE_REF"
+
+      - name: Wait for application
+        run: |
+          for i in {1..90}; do
+            if curl -fsS "$APP_URL" > /dev/null; then
+              echo "Application is ready"
+              exit 0
+            fi
+
+            echo "Waiting for application..."
+            sleep 2
+          done
+
+          echo "Application did not become ready"
+          docker logs "$APP_CONTAINER" || true
+          exit 1
+
+      - name: Download OpenAPI document
+        run: |
+          curl -fsS "$OPENAPI_URL" -o "$REPORT_DIR/openapi.json"
+
+      - name: Copy ZAP automation config
+        run: |
+          cp "$ZAP_CONFIG" "$REPORT_DIR/zap-full-auth-api.yaml"
+
+      - name: Run ZAP authenticated API scan
+        run: |
+          docker run --rm \
+            --network host \
+            -v "$PWD/$REPORT_DIR:/zap/wrk:rw" \
+            -e TARGET_URL="$APP_URL" \
+            ghcr.io/zaproxy/zaproxy:stable \
+            zap.sh \
+            -cmd \
+            -autorun /zap/wrk/zap-full-auth-api.yaml || true
+
+      - name: Show application logs
+        if: always()
+        run: |
+          docker logs "$APP_CONTAINER" || true
+
+      - name: Stop application container
+        if: always()
+        run: |
+          docker rm -f "$APP_CONTAINER" || true
+
+      - name: Upload ZAP authenticated API artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dast-zap-auth-api
+          path: reports/dast/zap-auth-api/
+          retention-days: 30
