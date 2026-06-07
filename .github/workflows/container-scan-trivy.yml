@@ -1,0 +1,68 @@
+name: Container Scan - Trivy
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+  trivy-container-scan:
+    runs-on: ubuntu-latest
+
+    env:
+      IMAGE_NAME: vuln-spa
+      IMAGE_TAG: benchmark-${{ github.sha }}
+      IMAGE_REF: vuln-spa:benchmark-${{ github.sha }}
+      REPORT_DIR: reports/container-scan/trivy
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Prepare report directory
+        run: |
+          mkdir -p "$REPORT_DIR"
+
+      - name: Build Docker image
+        run: |
+          docker build \
+            -t "$IMAGE_REF" \
+            .
+
+      - name: Run Trivy image scan - JSON
+        run: |
+          docker run --rm \
+            -v /var/run/docker.sock:/var/run/docker.sock \
+            -v "$PWD:/repo" \
+            aquasec/trivy:latest \
+            image \
+            --format json \
+            --output /repo/$REPORT_DIR/trivy-image.json \
+            "$IMAGE_REF" || true
+
+      - name: Run Trivy image scan - SARIF
+        run: |
+          docker run --rm \
+            -v /var/run/docker.sock:/var/run/docker.sock \
+            -v "$PWD:/repo" \
+            aquasec/trivy:latest \
+            image \
+            --format sarif \
+            --output /repo/$REPORT_DIR/trivy-image.sarif \
+            "$IMAGE_REF" || true
+
+      - name: Upload Trivy SARIF to Code Scanning
+        if: always()
+        uses: github/codeql-action/upload-sarif@v4
+        with:
+          sarif_file: reports/container-scan/trivy/trivy-image.sarif
+
+      - name: Upload Trivy container scan artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: container-scan-trivy
+          path: reports/container-scan/trivy/
+          retention-days: 30
