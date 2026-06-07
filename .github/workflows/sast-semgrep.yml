@@ -1,0 +1,89 @@
+name: SAST - Semgrep
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+  semgrep:
+    name: Run Semgrep SAST
+    runs-on: ubuntu-latest
+
+    env:
+      REPORT_DIR: reports/sast/semgrep
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Prepare report directory
+        run: |
+          mkdir -p "$REPORT_DIR"
+
+      - name: Run Semgrep JSON
+        run: |
+          docker run --rm \
+            -v "$PWD:/src" \
+            returntocorp/semgrep:latest \
+            semgrep scan \
+            --config=auto \
+            --json \
+            --output=/src/$REPORT_DIR/semgrep.json \
+            /src/backend /src/frontend/src || true
+
+      - name: Run Semgrep SARIF
+        run: |
+          docker run --rm \
+            -v "$PWD:/src" \
+            returntocorp/semgrep:latest \
+            semgrep scan \
+            --config=auto \
+            --sarif \
+            --output=/src/$REPORT_DIR/semgrep.sarif \
+            /src/backend /src/frontend/src || true
+
+      - name: Print Semgrep findings
+        if: always()
+        run: |
+          if [ -f "$REPORT_DIR/semgrep.sarif" ]; then
+            jq -r '
+              (
+                .runs[0].tool.driver.rules // []
+                | map({key: .id, value: (.properties.tags // [])})
+                | from_entries
+              ) as $tags_map
+              |
+              (.runs[0].results // [])[] |
+              "───────────────────────────────────────────────\n" +
+              "Rule:    " + (.ruleId // "unknown") + "\n" +
+              "Message: " + (.message.text // "") + "\n\n" +
+              "File:    " + (.locations[0].physicalLocation.artifactLocation.uri // "unknown") + ":" +
+                            ((.locations[0].physicalLocation.region.startLine // 0) | tostring) + "\n" +
+              (
+                if (($tags_map[.ruleId] // []) | length > 0)
+                then "Tags:    " + (($tags_map[.ruleId] // []) | join(", ")) + "\n"
+                else ""
+                end
+              ) +
+              "\n"
+            ' "$REPORT_DIR/semgrep.sarif"
+          else
+            echo "semgrep.sarif not found"
+          fi
+
+      - name: Upload Semgrep artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sast-semgrep
+          path: reports/sast/semgrep/
+          retention-days: 30
+
+      - name: Upload Semgrep SARIF to Code Scanning
+        if: always()
+        uses: github/codeql-action/upload-sarif@v4
+        with:
+          sarif_file: reports/sast/semgrep/semgrep.sarif
