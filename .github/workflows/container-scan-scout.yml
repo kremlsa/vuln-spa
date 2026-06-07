@@ -1,0 +1,63 @@
+name: Container Scan - Docker Scout
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+  docker-scout-container-scan:
+    runs-on: ubuntu-latest
+
+    env:
+      IMAGE_NAME: vuln-spa
+      IMAGE_TAG: benchmark-${{ github.sha }}
+      IMAGE_REF: vuln-spa:benchmark-${{ github.sha }}
+      REPORT_DIR: reports/container-scan/docker-scout
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Prepare report directory
+        run: |
+          mkdir -p "$REPORT_DIR"
+
+      - name: Build Docker image
+        run: |
+          docker build \
+            -t "$IMAGE_REF" \
+            .
+
+      - name: Run Docker Scout CVE scan
+        uses: docker/scout-action@v1
+        with:
+          command: cves
+          image: ${{ env.IMAGE_REF }}
+          only-severities: critical,high,medium,low
+          sarif-file: reports/container-scan/docker-scout/docker-scout-cves.sarif
+          summary: true
+          exit-code: false
+
+      - name: Run Docker Scout SBOM
+        uses: docker/scout-action@v1
+        with:
+          command: sbom
+          image: ${{ env.IMAGE_REF }}
+          output: reports/container-scan/docker-scout/docker-scout-sbom.spdx.json
+
+      - name: Upload Docker Scout SARIF to Code Scanning
+        if: always()
+        uses: github/codeql-action/upload-sarif@v4
+        with:
+          sarif_file: reports/container-scan/docker-scout/docker-scout-cves.sarif
+
+      - name: Upload Docker Scout container scan artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: container-scan-docker-scout
+          path: reports/container-scan/docker-scout/
+          retention-days: 30
