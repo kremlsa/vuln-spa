@@ -72,6 +72,7 @@ jobs:
             ghcr.io/zaproxy/zaproxy:stable \
             zap.sh \
             -cmd \
+            -port 8090 \
             -autorun /zap/wrk/zap-full-auth-api.yaml || true
 
       - name: Show application logs
