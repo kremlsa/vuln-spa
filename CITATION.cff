@@ -1,0 +1,9 @@
+cff-version: 1.2.0
+title: vuln-spa
+message: "If you use this benchmark, please cite it."
+type: software
+authors:
+  - family-names: Kremlev
+    given-names: Alexander
+repository-code: "https://github.com/kremlsa/vuln-spa"
+license: Apache-2.0
